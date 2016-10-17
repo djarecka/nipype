@@ -379,7 +379,7 @@ class Function(IOBase):
     input_spec = FunctionInputSpec
     output_spec = DynamicTraitedSpec
 
-    def __init__(self, input_names, output_names, function=None, imports=None,
+    def __init__(self, input_names, output_names, function, imports=None,
                  **inputs):
         """
 
@@ -422,6 +422,10 @@ class Function(IOBase):
         self._out = {}
         for name in self._output_names:
             self._out[name] = None
+        for inp_nm in self._input_names:                                                    
+            if inp_nm not in function.__code__.co_varnames:                                 
+                raise Exception("The function %s does not take %s as an argument" %(function.func_name, inp_nm))                                                                        
+        
 
     def _set_function_string(self, obj, name, old, new):
         if name == 'function_str':
