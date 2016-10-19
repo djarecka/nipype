@@ -422,9 +422,8 @@ class Function(IOBase):
         self._out = {}
         for name in self._output_names:
             self._out[name] = None
-        for inp_nm in self._input_names:                                                    
-            if inp_nm not in function.__code__.co_varnames:                                 
-                raise Exception("The function %s does not take %s as an argument" %(function.func_name, inp_nm))                                                                        
+        if set(self._input_names) != set(function.__code__.co_varnames): 
+            raise Exception("the lists of input_names and function arguments differ")
         
 
     def _set_function_string(self, obj, name, old, new):
