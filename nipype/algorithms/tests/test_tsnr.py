@@ -87,11 +87,12 @@ class TestTSNR():
 
     @mock.patch('warnings.warn')
     def test_warning(self, mock_warn):
+        ''' test that usage of misc.TSNR trips a warning to use confounds.TSNR instead '''
         # run
         misc.TSNR(in_file=self.in_filenames['in_file'])
 
         # assert
-        mock_warn.assert_called_once_with(mock.ANY, UserWarning)
+        assert True in [args[0].count('confounds') > 0 for _, args, _ in mock_warn.mock_calls]
 
     def assert_expected_outputs_poly(self, tsnrresult, expected_ranges):
         assert_equal(os.path.basename(tsnrresult.outputs.detrended_file),
