@@ -31,12 +31,12 @@ py.test --doctest-modules  --cov=nipype nipype
 #dnosetests -s nipype -c /root/src/nipype/.noserc --xunit-file="/scratch/nosetests_py${PYTHON_VERSION}.xml" --cover-xml-file="/scratch/coverage_py${PYTHON_VERSION}.xml"
 
 # Workaround: run here the profiler tests in python 3
-if [[ "${PYTHON_VERSION}" -ge "30" ]]; then
-    echo '[execution]' >> /root/.nipype/nipype.cfg
-    echo 'profile_runtime = true' >> /root/.nipype/nipype.cfg
-    py.test  --cov=nipype nipype/interfaces/tests/test_runtime_profiler.py #--xunit-file="/scratch/nosetests_py${PYTHON_VERSION}_profiler.xml" --cover-xml-file="/scratch/coverage_py${PYTHON_VERSION}_profiler.xml"
-    py.test  --cov=nipype nipype/pipeline/plugins/tests/test_multiproc*.py #--xunit-file="/scratch/nosetests_py${PYTHON_VERSION}_multiproc.xml" --cover-xml-file="/scratch/coverage_py${PYTHON_VERSION}_multiproc.xml"
-fi
+#if [[ "${PYTHON_VERSION}" -ge "30" ]]; then
+#    echo '[execution]' >> /root/.nipype/nipype.cfg
+#    echo 'profile_runtime = true' >> /root/.nipype/nipype.cfg
+#    py.test  --cov=nipype nipype/interfaces/tests/test_runtime_profiler.py #--xunit-file="/scratch/nosetests_py${PYTHON_VERSION}_profiler.xml" --cover-xml-file="/scratch/coverage_py${PYTHON_VERSION}_profiler.xml"
+#    py.test  --cov=nipype nipype/pipeline/plugins/tests/test_multiproc*.py #--xunit-file="/scratch/nosetests_py${PYTHON_VERSION}_multiproc.xml" --cover-xml-file="/scratch/coverage_py${PYTHON_VERSION}_multiproc.xml"
+#fi
 
 # Copy crashfiles to scratch
 for i in $(find /root/src/nipype/ -name "crash-*" ); do cp $i /scratch/crashfiles/; done
