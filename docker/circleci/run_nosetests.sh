@@ -6,7 +6,7 @@ set -u
 PYTHON_VERSION=$( python -c "import sys; print('{}{}'.format(sys.version_info[0], sys.version_info[1]))" )
 
 # Create necessary directories
-mkdir -p /scratch/nose /scratch/crashfiles /scratch/logs/py${PYTHON_VERSION}
+mkdir -p /scratch/pytest /scratch/crashfiles /scratch/logs/py${PYTHON_VERSION}
 
 # Create a nipype config file
 mkdir -p /root/.nipype
