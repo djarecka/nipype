@@ -54,7 +54,7 @@ test:
 #    - docker run -v /etc/localtime:/etc/localtime:ro -e NIPYPE_NUMBER_OF_CPUS=4 -v ~/examples:/root/examples:ro -v ~/scratch:/scratch -w /scratch nipype/nipype_test:py35 /usr/bin/run_examples.sh fmri_spm_nested MultiProc /root/examples/ l2pipeline
 
   post:
-#    - bash docker/circleci/teardown.sh
+    - bash docker/circleci/teardown.sh
     - for xml_f in ${CIRCLE_TEST_REPORTS}/nose/coverage*.xml; do bash <(curl -s https://codecov.io/bash) -f $xml_f -t ac172a50-8e66-42e5-8822-5373fcf54686 -F unittests; done
     - for xml_f in ${CIRCLE_TEST_REPORTS}/nose/smoketest*.xml; do bash <(curl -s https://codecov.io/bash) -f $xml_f -t ac172a50-8e66-42e5-8822-5373fcf54686 -F smoketests; done
 

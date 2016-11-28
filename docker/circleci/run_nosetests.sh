@@ -24,7 +24,9 @@ fi
 cd /root/src/nipype/
 make clean
 pip install -U pytest
-py.test nipype
+pip install pytest-raisesregexp
+pip install click
+py.test --doctest-modules nipype
 #dnosetests -s nipype -c /root/src/nipype/.noserc --xunit-file="/scratch/nosetests_py${PYTHON_VERSION}.xml" --cover-xml-file="/scratch/coverage_py${PYTHON_VERSION}.xml"
 
 # Workaround: run here the profiler tests in python 3
