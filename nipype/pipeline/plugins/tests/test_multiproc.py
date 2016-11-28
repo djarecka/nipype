@@ -175,6 +175,7 @@ def test_no_more_memory_than_specified():
 
     os.remove(LOG_FILENAME)
 
+
 @pytest.mark.skipif(nib.runtime_profile == False, reason="runtime_profile=False")
 def test_no_more_threads_than_specified():
     LOG_FILENAME = 'callback.log'
@@ -187,10 +188,10 @@ def test_no_more_threads_than_specified():
 
     max_threads = 4
     pipe = pe.Workflow(name='pipe')
-    n1 = pe.Node(interface=TestInterfaceSingleNode(), name='n1')
-    n2 = pe.Node(interface=TestInterfaceSingleNode(), name='n2')
-    n3 = pe.Node(interface=TestInterfaceSingleNode(), name='n3')
-    n4 = pe.Node(interface=TestInterfaceSingleNode(), name='n4')
+    n1 = pe.Node(interface=SingleNodeTestInterface(), name='n1')
+    n2 = pe.Node(interface=SingleNodeTestInterface(), name='n2')
+    n3 = pe.Node(interface=SingleNodeTestInterface(), name='n3')
+    n4 = pe.Node(interface=SingleNodeTestInterface(), name='n4')
 
     n1.interface.num_threads = 1
     n2.interface.num_threads = 1
