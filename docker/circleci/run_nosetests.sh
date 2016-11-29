@@ -38,6 +38,7 @@ if [[ "${PYTHON_VERSION}" -ge "30" ]]; then
     py.test  --cov=nipype nipype/pipeline/plugins/tests/test_multiproc*.py #--xunit-file="/scratch/nosetests_py${PYTHON_VERSION}_multiproc.xml" --cover-xml-file="/scratch/coverage_py${PYTHON_VERSION}_multiproc.xml"
 fi
 
+#teste
 # Copy crashfiles to scratch
 for i in $(find /root/src/nipype/ -name "crash-*" ); do cp $i /scratch/crashfiles/; done
 chmod 777 -R /scratch/*
