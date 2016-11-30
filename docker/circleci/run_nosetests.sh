@@ -5,6 +5,7 @@ set -u
 
 PYTHON_VERSION=$( python -c "import sys; print('{}{}'.format(sys.version_info[0], sys.version_info[1]))" )
 
+# test test
 # Create necessary directories
 mkdir -p /scratch/nose /scratch/crashfiles /scratch/logs/py${PYTHON_VERSION}
 
