@@ -13,5 +13,3 @@ psutil
 funcsigs
 configparser
 doctest-ignore-unicode
-pytest-raisesregexp
-pytest-cov
