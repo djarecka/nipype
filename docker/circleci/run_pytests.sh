@@ -29,7 +29,7 @@ make clean
 #conda install pytest
 #pip install pytest-raisesregexp
 #conda install pytest-cov
-conda install click
+#conda install click
 py.test --doctest-modules --cov-report xml:/scratch/coverage_py${PYTHON_VERSION}.xml --cov=nipype nipype
 #nosetests -s nipype -c /root/src/nipype/.noserc --xunit-file="/scratch/nosetests_py${PYTHON_VERSION}.xml" --cover-xml-file="/scratch/coverage_py${PYTHON_VERSION}.xml"
 
