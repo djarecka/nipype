@@ -149,8 +149,6 @@ REQUIRES = [
 ]
 
 TESTS_REQUIRES = [
-    'pytest-raisesregexp',
-    'pytest-cov',
     'mock',
     'codecov',
     'dipy',
