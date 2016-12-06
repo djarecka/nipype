@@ -12,4 +12,6 @@ xvfbwrapper
 psutil
 funcsigs
 configparser
-doctest-ignore-unicode
+pytest
+pytest-raisesregexp		
+pytest-cov				
