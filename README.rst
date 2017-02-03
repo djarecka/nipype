@@ -1,5 +1,5 @@
 ========================================================
-NIPYPE: Neuroimaging in Python: Pipelines and Interfaces
+ NIPYPE: Neuroimaging in Python: Pipelines and Interfaces
 ========================================================
 
 .. image:: https://travis-ci.org/nipy/nipype.png?branch=master
