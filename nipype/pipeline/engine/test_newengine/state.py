@@ -11,20 +11,27 @@ class State:
 
         self.mapper = mapper
         if self.mapper:
-            self.mapper_rpn = aux.mapper2rpn(self.mapper)
+            # changing mapper (as in rpn), so I can read from left to right
+            # e.g. if mapper=('d', ['e', 'r']), _mapper_rpn=['d', 'e', 'r', '*', '.']
+            self._mapper_rpn = aux.mapper2rpn(self.mapper)
         
-        # dictionary[key=input names] = list of axis related to
-        self.axis_for_input, self.ndim = aux.mapping_axis(self.state_inputs, self.mapper_rpn)
+        # dictionary[key=input names] = list of axes related to
+        # e.g. {'r': [1], 'e': [0], 'd': [0, 1]}
+        # ndim - int, number of dimension for the "final array" (that is not created)
+        self.axis_for_input, self.ndim = aux.mapping_axis(self.state_inputs, self._mapper_rpn)
 
-        # dictionary[key=axis] = list of axis related to
-        self.input_for_axis = []
-        self.shape = []
-        self._converting_axis2input()
-
+        # list of inputs variable for each axis
+        # e.g. [['e', 'd'], ['r', 'd']]
+        # shape - list, e.g. [2,3]
+        self.input_for_axis, self.shape = aux.converting_axis2input(self.state_inputs, 
+                                                                    self.axis_for_input, self.ndim)
+        
+        # list of all possible indexes in each dim, will be use to iterate
+        # e.g. [[0, 1], [0, 1, 2]]
         self.all_elements = [range(i) for i in self.shape]
 
 
-
+    # it should be probably move to auxiliary 
     def _converting_axis2input(self):
         for i in range(self.ndim):
             self.input_for_axis.append([])
@@ -39,12 +46,15 @@ class State:
     def state_values(self, ind):
         state_dict = {}
         for input, ax in self.axis_for_input.items():
-            sl = slice(ax[0], ax[-1]+1)
-            state_dict[input] = self.state_inputs[input][ind[sl]]
+            # checking which axes are important for the input
+            sl_ax = slice(ax[0], ax[-1]+1)
+            # taking the indexes related to the axes 
+            ind_inp = ind[sl_ax]
+            state_dict[input] = self.state_inputs[input][ind_inp]
         return state_dict
 
 
-    #this should be in the node class
+    #this should be in the node claslss, just an example how the state_values can be used
     def yielding_state(self):
         for ind in itertools.product(*self.all_elements):
             state_dict = self.state_values(ind)
