@@ -50,13 +50,13 @@ import itertools
 def test_mapping_axis(mapper, mapper_rpn, input, axis_for_inp, inp_for_axis, ndim):
     st = State(state_inputs=input, mapper=mapper)
 
-    assert st.mapper_rpn == mapper_rpn
+    assert st._mapper_rpn == mapper_rpn
     assert st.axis_for_input == axis_for_inp 
     assert st.ndim == ndim
 
     for i, inp in enumerate(inp_for_axis):
         assert sorted(st.input_for_axis[i]) == sorted(inp) 
-
+    #pdb.set_trace()
 
 
 @pytest.mark.parametrize("mapper, input, state_values_list",[

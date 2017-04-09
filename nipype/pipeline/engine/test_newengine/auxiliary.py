@@ -96,3 +96,19 @@ def mapping_axis(state_inputs, mapper_rpn):
 
     print("axis", axis_for_input)
     return axis_for_input, max(current_axis) + 1
+
+
+
+def converting_axis2input(state_inputs, axis_for_input, ndim):
+    input_for_axis = []
+    shape = []
+    for i in range(ndim):
+        input_for_axis.append([])
+        shape.append(0)
+        
+    for inp, axis in axis_for_input.items():
+        for (i, ax) in enumerate(axis):
+            input_for_axis[ax].append(inp)
+            shape[ax] =  state_inputs[inp].shape[i]
+            
+    return input_for_axis, shape
