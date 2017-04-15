@@ -54,6 +54,14 @@ class State:
 
 
     def state_values(self, ind):
+        if len(ind) > self.ndim:
+            raise IndexError("too many indices")
+        
+        for ii, index in enumerate(ind):
+            if index > self.shape[ii] - 1:
+                raise IndexError("index {} is out of bounds for axis {} with size {}".format(index, ii, self.shape[ii])) 
+
+
         state_dict = {}
         for input, ax in self.axis_for_input.items():
             # checking which axes are important for the input
@@ -62,6 +70,7 @@ class State:
             ind_inp = ind[sl_ax]
             state_dict[input] = self.state_inputs[input][ind_inp]
 
+        # returning a named tuple
         return self.state_tuple(**state_dict)
 
 

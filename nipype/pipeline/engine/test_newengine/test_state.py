@@ -105,6 +105,7 @@ def test_state_values(mapper, input, state_values_list):
         assert state_dict == state_tuple(**state_values_list[i])
 
 
+# use dictionary for expected and change to named tuple within the test
 @pytest.mark.parametrize("mapper, input, elements, expected",[
         (('d', 'r'), {"d":np.array([3,4,5]), "r":np.array([1,2,3])},
          ["st[0]", "st[2]"], [{"d":3, "r":1}, {"d":5, "r":3}]),
@@ -123,3 +124,20 @@ def test_state_ind(mapper, input, elements, expected):
 
     for i, el in enumerate(elements):
         assert eval(el) == state_tuple(**expected[i])
+
+
+@pytest.mark.parametrize("mapper, input, elements",[
+        (('d', 'r'), {"d":np.array([3,4]), "r":np.array([1,2])}, ["st[3]", "st[0,1]"]),
+
+        (('d', 'r'), {"d":np.array([[3,4],[5,6]]), "r":np.array([[1,2],[3,3]])},
+         ["st[2,1]", "st[1,3]", "st[1,1,1]"]),
+
+        (["d", "r"], {"d":np.array([3,4,5]), "r":np.array([1,2,3])},
+         ["st[0,3]", "st[3,1]", "st[1,1,1]"]), 
+        ])
+def test_state_indexerror(mapper, input, elements):
+    st = State(state_inputs=input, mapper=mapper)
+
+    for i, el in enumerate(elements):
+        with pytest.raises(IndexError):
+            eval(el) 
