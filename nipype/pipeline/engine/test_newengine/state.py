@@ -1,5 +1,6 @@
 import numpy as np
 import itertools
+from collections import namedtuple
 import pdb
 
 import auxiliary as aux
@@ -8,6 +9,10 @@ class State:
     def __init__(self, state_inputs, mapper=None):
         
         self.state_inputs = state_inputs
+
+        self._input_names =  self.state_inputs.keys()
+        self._input_names.sort()
+        self.state_tuple = namedtuple("state_tuple", self._input_names)
 
         self.mapper = mapper
         if self.mapper:
@@ -56,7 +61,8 @@ class State:
             # taking the indexes related to the axes 
             ind_inp = ind[sl_ax]
             state_dict[input] = self.state_inputs[input][ind_inp]
-        return state_dict
+
+        return self.state_tuple(**state_dict)
 
 
     #this should be in the node claslss, just an example how the state_values can be used

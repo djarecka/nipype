@@ -2,6 +2,7 @@ import pytest, pdb
 from state import State
 import numpy as np
 import itertools
+from collections import namedtuple
 
 
 
@@ -9,7 +10,8 @@ import itertools
         (('d', 'r'), ['d', 'r', '.'], {"d":np.array([3,4,5]), "r":np.array([1,2,3])}, 
          {'r': [0], 'd': [0]}, [["r", "d"]], 1),
 
-        (('d', 'r'), ['d', 'r', '.'], {"d":np.array([[3,4],[5,6]]), "r":np.array([[1,2],[3,3]])}, {'r': [0, 1], 'd': [0, 1]}, [["r", "d"], ["r", "d"]], 2),
+        (('d', 'r'), ['d', 'r', '.'], {"d":np.array([[3,4],[5,6]]), "r":np.array([[1,2],[3,3]])}, 
+         {'r': [0, 1], 'd': [0, 1]}, [["r", "d"], ["r", "d"]], 2),
 
         ((("d", "r"), "e"), ['d', 'r', '.', "e", "."], 
          {"d":np.array([3,4,5]), "r":np.array([1,2,3]), "e":np.array([1,2,3])}, 
@@ -94,9 +96,13 @@ def test_mapping_axis(mapper, mapper_rpn, input, axis_for_inp, inp_for_axis, ndi
          ])
 def test_state_values(mapper, input, state_values_list):
     st = State(state_inputs=input, mapper=mapper)
+    inp_names = input.keys()
+    inp_names.sort()
+    state_tuple = namedtuple("state", inp_names)
+
     for i, ind in enumerate(itertools.product(*st.all_elements)):
         state_dict = st.state_values(ind)
-        assert state_dict == state_values_list[i]
+        assert state_dict == state_tuple(**state_values_list[i])
 
 
 @pytest.mark.parametrize("mapper, input, elements, expected",[
@@ -111,5 +117,9 @@ def test_state_values(mapper, input, state_values_list):
         ])
 def test_state_ind(mapper, input, elements, expected):
     st = State(state_inputs=input, mapper=mapper)
+    inp_names =input.keys()
+    inp_names.sort()
+    state_tuple = namedtuple("state",inp_names)
+
     for i, el in enumerate(elements):
-        assert eval(el) == expected[i]
+        assert eval(el) == state_tuple(**expected[i])
