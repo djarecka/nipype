@@ -30,6 +30,11 @@ class State:
         # e.g. [[0, 1], [0, 1, 2]]
         self.all_elements = [range(i) for i in self.shape]
 
+    def __getitem__(self, key):
+        if type(key) is int:
+            key = (key,)
+        return self.state_values(key)
+
 
     # it should be probably move to auxiliary 
     def _converting_axis2input(self):

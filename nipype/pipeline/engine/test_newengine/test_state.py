@@ -97,3 +97,19 @@ def test_state_values(mapper, input, state_values_list):
     for i, ind in enumerate(itertools.product(*st.all_elements)):
         state_dict = st.state_values(ind)
         assert state_dict == state_values_list[i]
+
+
+@pytest.mark.parametrize("mapper, input, elements, expected",[
+        (('d', 'r'), {"d":np.array([3,4,5]), "r":np.array([1,2,3])},
+         ["st[0]", "st[2]"], [{"d":3, "r":1}, {"d":5, "r":3}]),
+
+        (('d', 'r'), {"d":np.array([[3,4],[5,6]]), "r":np.array([[1,2],[3,3]])},
+         ["st[0,1]", "st[1,0]"], [{"d":4, "r":2}, {"d":5, "r":3}]),
+
+        (["d", "r"], {"d":np.array([3,4,5]), "r":np.array([1,2,3])},
+         ["st[0,1]", "st[2,1]", "st[1,1]"], [{"d":3, "r":2}, {"d":5, "r":2}, {"d":4, "r":2}]),
+        ])
+def test_state_ind(mapper, input, elements, expected):
+    st = State(state_inputs=input, mapper=mapper)
+    for i, el in enumerate(elements):
+        assert eval(el) == expected[i]
