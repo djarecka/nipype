@@ -10,15 +10,15 @@ class State(object):
         
         self.state_inputs = state_inputs
 
-        self._input_names =  self.state_inputs.keys()
-        self._input_names.sort()
-        self._state_tuple = namedtuple("state_tuple", self._input_names)
-
         self._mapper = mapper
         if self._mapper:
             # changing mapper (as in rpn), so I can read from left to right
             # e.g. if mapper=('d', ['e', 'r']), _mapper_rpn=['d', 'e', 'r', '*', '.']
             self._mapper_rpn = aux.mapper2rpn(self._mapper)
+
+        self._input_names = [i for i in self._mapper_rpn if i not in ["*", "."]]
+        self._state_tuple = namedtuple("state_tuple", self._input_names)
+
         
         # dictionary[key=input names] = list of axes related to
         # e.g. {'r': [1], 'e': [0], 'd': [0, 1]}
