@@ -27,6 +27,8 @@ from ... import logging
 from ...interfaces.base import DynamicTraitedSpec
 from ...utils.filemanip import loadpkl, savepkl
 
+import state
+
 logger = logging.getLogger('workflow')
 
 
@@ -50,30 +52,37 @@ class Node(object):
             default=None, which results in the use of mkdtemp
 
         """
+        self._inputs = inputs
         self._interface = interface
         self.base_dir = base_dir
+        # dj TODO: do i need it?
         self.config = None
         self._verify_name(name)
         self.name = name
         self.mapper = mapper
         self.reducer = reducer
+        # dj TODO: do I need _id and _hierarchy?
         # for compatibility with node expansion using iterables
         self._id = self.name
         self._hierarchy = None
 
     @property
     def result(self):
+        # dj TODO: think if we want to have self._result
         if self._result:
             return self._result
         else:
             cwd = self.output_dir()
+            # dj TODO: no self._load_resultfile
             result, _, _ = self._load_resultfile(cwd)
             return result
 
     @property
     def inputs(self):
         """Return the inputs of the underlying interface"""
-        return self._interface.inputs
+        #return self._interface.inputs
+        # dj: temporary will use self._inputs
+        return self._inputs
 
     @inputs.setter
     def inputs(self, inputs):
@@ -99,6 +108,7 @@ class Node(object):
             fullname = self._hierarchy + '.' + self.name
         return fullname
 
+    # dj TODO: it's not the same as fullname? (self._id is self._name  in init)
     @property
     def itername(self):
         itername = self._id
@@ -106,6 +116,7 @@ class Node(object):
             itername = self._hierarchy + '.' + self._id
         return itername
 
+    # dj TODO: when do we need clone?
     def clone(self, name):
         """Clone an EngineBase object
 
@@ -127,6 +138,7 @@ class Node(object):
     def _check_outputs(self, parameter):
         return hasattr(self.outputs, parameter)
 
+    # dj TODO: don't understand
     def _check_inputs(self, parameter):
         if isinstance(self.inputs, DynamicTraitedSpec):
             return True
@@ -154,7 +166,12 @@ class Node(object):
 
     def run(self):
         # Map
+        # dj TODO: should I introduce self._state??
+        # should I pass self only? and have node in the init?
+        _state = state.State(state_inputs=self._inputs, mapper=self._mapper)
         # Function
+        # dj TODO: should be self.interface
+        _state.yielding_state(self._interface)
         # Reduce
         return self._result
 
@@ -162,14 +179,14 @@ class Node(object):
 class Workflow(Node):
     allow_flattening = False
 
-    def __init__(self, interface, input_map=None, output_map=None, **kwargs)
-        raise NotImplementedError
+    def __init__(self, interface, input_map=None, output_map=None, **kwargs)
+    	raise NotImplementedError
 
-    def add_nodes(self, nodes):
-        raise NotImplementedError
+    def add_nodes(self, nodes):
+	raise NotImplementedError
 
-    def connect(self, from_node, from_socket, to_node, to_socket):
-        raise NotImplementedError
+    def connect(self, from_node, from_socket, to_node, to_socket):
+	raise NotImplementedError
 
-    def run(monitor_consumption=True):
-        raise NotImplementedError
+    def run(monitor_consumption=True):
+	raise NotImplementedError
