@@ -55,7 +55,7 @@ def mapping_axis(state_inputs, mapper_rpn):
 
             else:
                 if state_inputs[right].shape == state_inputs[left].shape:
-                    current_axis = range(state_inputs[right].ndim)
+                    current_axis = list(range(state_inputs[right].ndim))
                     current_shape = state_inputs[left].shape
                     axis_for_input[left] = current_axis
                     axis_for_input[right] = current_axis
@@ -83,7 +83,7 @@ def mapping_axis(state_inputs, mapper_rpn):
                                                in range(state_inputs[left].ndim)]
                 current_shape = tuple([i for i in state_inputs[left].shape + current_shape])
             else:
-                axis_for_input[left] = range(state_inputs[left].ndim)
+                axis_for_input[left] = list(range(state_inputs[left].ndim))
                 axis_for_input[right] = [i+state_inputs[left].ndim for i 
                                               in range(state_inputs[right].ndim)]
                 current_axis = axis_for_input[left] + axis_for_input[right]
