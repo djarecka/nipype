@@ -7,13 +7,50 @@ from collections import namedtuple
 from supernodes import Node
 from ....interfaces import base as nib
 
-
-# TODO: check for a simpler mapper and no mapper
 #TODO: list as input should be also ok 
 
+def fun1(a):
+    return a**2
+
+def fun2(a):
+    pow = np.arange(4)
+    return a**pow
 
 def fun3(a, b):
     return a * b
+
+
+@pytest.mark.parametrize("inputs_dict, expected_order, expected_output", [
+        ({"a": np.array([3, 4, 5])}, ["a"], [("state(a=3)", 9),("state(a=4)", 16), ("state(a=5)", 25)]),
+        # do we want to allow 2D inputs a, when mapper="a"?
+        ({"a": np.array([[3, 4], [5, 6]])}, ["a"], 
+         [("state(a=3)", 9),("state(a=4)", 16), ("state(a=5)", 25), ("state(a=6)", 36)])
+        ])
+def test_singlenode_1(inputs_dict, expected_order, expected_output):
+    nn  = Node(inputs=inputs_dict, mapper="a", interface=fun1,
+               name="single_node_1")
+    nn.run()
+    state = namedtuple("state", expected_order)
+
+    for (i, out) in enumerate(nn.result):
+        assert out[0] == eval(expected_output[i][0]) # checking state values
+        assert (out[1] == expected_output[i][1]).all() # assuming that output value is an array (all() is used)
+
+
+@pytest.mark.parametrize("inputs_dict, expected_order, expected_output", [
+        ({"a": np.array([3, 4, 5])}, ["a"],
+         [("state(a=3)", [1, 3, 9, 27]),("state(a=4)", [1, 4, 16, 64]), ("state(a=5)", [1, 5, 25, 125])])
+        ])
+def test_singlenode_2(inputs_dict, expected_order, expected_output):
+    nn  = Node(inputs=inputs_dict, mapper="a", interface=fun2,
+               name="single_node_2")
+    nn.run()
+    state = namedtuple("state", expected_order)
+    
+    for (i, out) in enumerate(nn.result):
+        assert out[0] == eval(expected_output[i][0])
+        assert (out[1] == expected_output[i][1]).all()
+
 
 
 @pytest.mark.parametrize("inputs_dict, expected_order, expected_output", [

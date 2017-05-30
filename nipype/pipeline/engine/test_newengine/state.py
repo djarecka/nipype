@@ -20,7 +20,7 @@ class State(object):
         self._input_names = [i for i in self._mapper_rpn if i not in ["*", "."]]
         self._state_tuple = namedtuple("state_tuple", self._input_names)
 
-        
+        #pdb.set_trace()
         # dictionary[key=input names] = list of axes related to
         # e.g. {'r': [1], 'e': [0], 'd': [0, 1]}
         # ndim - int, number of dimension for the "final array" (that is not created)

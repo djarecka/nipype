@@ -35,6 +35,7 @@ logger = logging.getLogger('workflow')
 class Node(object):
     """Defines common attributes and functions for workflows and nodes."""
 
+    #dj: can mapper be None??
     def __init__(self, interface, name, mapper=None, reducer=None, inputs=None,
                  base_dir=None):
         """ Initialize base parameters of a workflow or node
