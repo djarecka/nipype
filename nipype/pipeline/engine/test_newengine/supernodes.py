@@ -23,11 +23,11 @@ standard_library.install_aliases()
 from copy import deepcopy
 import re
 import numpy as np
-from ... import logging
-from ...interfaces.base import DynamicTraitedSpec
-from ...utils.filemanip import loadpkl, savepkl
+from .... import logging
+from ....interfaces.base import DynamicTraitedSpec
+from ....utils.filemanip import loadpkl, savepkl
 
-import state
+from . import state
 
 logger = logging.getLogger('workflow')
 
@@ -179,14 +179,14 @@ class Node(object):
 class Workflow(Node):
     allow_flattening = False
 
-    def __init__(self, interface, input_map=None, output_map=None, **kwargs)
+    def __init__(self, interface, input_map=None, output_map=None, **kwargs):
     	raise NotImplementedError
 
     def add_nodes(self, nodes):
-	raise NotImplementedError
+        raise NotImplementedError
 
     def connect(self, from_node, from_socket, to_node, to_socket):
-	raise NotImplementedError
+        raise NotImplementedError
 
     def run(monitor_consumption=True):
-	raise NotImplementedError
+        raise NotImplementedError
