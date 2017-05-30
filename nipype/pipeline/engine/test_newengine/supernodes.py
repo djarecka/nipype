@@ -59,7 +59,7 @@ class Node(object):
         self.config = None
         self._verify_name(name)
         self.name = name
-        self.mapper = mapper
+        self._mapper = mapper
         self.reducer = reducer
         # dj TODO: do I need _id and _hierarchy?
         # for compatibility with node expansion using iterables
@@ -171,9 +171,8 @@ class Node(object):
         _state = state.State(state_inputs=self._inputs, mapper=self._mapper)
         # Function
         # dj TODO: should be self.interface
-        _state.yielding_state(self._interface)
-        # Reduce
-        return self._result
+        self._result = _state.yielding_state(self._interface)
+        # Reduce - dj TODO
 
 
 class Workflow(Node):

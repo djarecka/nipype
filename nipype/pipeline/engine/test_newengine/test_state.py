@@ -4,7 +4,7 @@ import numpy as np
 import itertools
 from collections import namedtuple
 
-
+#TODO no tests for mapper = "a"
 
 @pytest.mark.parametrize("mapper, mapper_rpn, input, axis_for_inp, inp_for_axis, ndim",[
         (('d', 'r'), ['d', 'r', '.'], {"d":np.array([3,4,5]), "r":np.array([1,2,3])}, 

@@ -11,6 +11,7 @@ class State(object):
         self.state_inputs = state_inputs
 
         self._mapper = mapper
+        # TODO: what if mapper=None, more things should be in IF
         if self._mapper:
             # changing mapper (as in rpn), so I can read from left to right
             # e.g. if mapper=('d', ['e', 'r']), _mapper_rpn=['d', 'e', 'r', '*', '.']
@@ -105,8 +106,11 @@ class State(object):
 
 
     #this should be in the node claslss, just an example how the state_values can be used
-    def yielding_state(self):
+    def yielding_state(self, function): # TODO should move to interface 
+        results_list = []
         for ind in itertools.product(*self._all_elements):
             state_dict = self.state_values(ind)
-            print("State", state_dict)
-            
+            #pdb.set_trace()
+            # TODO: it will be later interface.run or something similar
+            results_list.append((state_dict, function(*state_dict)))
+        return results_list
