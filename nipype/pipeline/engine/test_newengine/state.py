@@ -106,11 +106,26 @@ class State(object):
 
 
     #this should be in the node claslss, just an example how the state_values can be used
-    def yielding_state(self, function): # TODO should move to interface 
+    def yielding_state(self, function, reducer_key=None): # TODO should move to interface 
         results_list = []
+        if reducer_key:
+            if reducer_key in self._input_names:
+                reducer_value_dict = {}
+            else:
+                # dj: reducer_key can be at the end also an output (?)
+                raise Exception("reducer_key is not a valid input name")
         for ind in itertools.product(*self._all_elements):
             state_dict = self.state_values(ind)
-            #pdb.set_trace()
-            # TODO: it will be later interface.run or something similar
-            results_list.append((state_dict, function(*state_dict)))
+            if reducer_key:
+                val = state_dict.__getattribute__(reducer_key)
+                if val in reducer_value_dict.keys():
+                    #pdb.set_trace()
+                    results_list[reducer_value_dict[val]][1].append((state_dict, function(*state_dict)))
+                else:
+                    #pdb.set_trace()
+                    reducer_value_dict[val] = len(results_list)
+                    results_list.append(("{} = {}".format(reducer_key, val), [(state_dict, function(*state_dict))]))
+            else:        
+                # TODO: it will be later interface.run or something similar
+                results_list.append((state_dict, function(*state_dict)))
         return results_list

@@ -61,7 +61,7 @@ class Node(object):
         self._verify_name(name)
         self.name = name
         self._mapper = mapper
-        self.reducer = reducer
+        self._reducer = reducer
         # dj TODO: do I need _id and _hierarchy?
         # for compatibility with node expansion using iterables
         self._id = self.name
@@ -172,7 +172,7 @@ class Node(object):
         _state = state.State(state_inputs=self._inputs, mapper=self._mapper)
         # Function
         # dj TODO: should be self.interface
-        self._result = _state.yielding_state(self._interface)
+        self._result = _state.yielding_state(self._interface, self._reducer)
         # Reduce - dj TODO
 
 
