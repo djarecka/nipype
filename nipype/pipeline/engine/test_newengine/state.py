@@ -114,6 +114,8 @@ class State(object):
             else:
                 # dj: reducer_key can be at the end also an output (?)
                 raise Exception("reducer_key is not a valid input name")
+
+        # this should yield at the end, not append to the list
         for ind in itertools.product(*self._all_elements):
             state_dict = self.state_values(ind)
             if reducer_key:
