@@ -3,7 +3,7 @@ import itertools
 from collections import namedtuple
 import pdb
 
-import auxiliary as aux
+from . import auxiliary as aux
 
 class State(object):
     def __init__(self, state_inputs, mapper=None):

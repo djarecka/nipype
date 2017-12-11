@@ -1,10 +1,10 @@
 import pytest, pdb
-from state import State
+from .state import State
 import numpy as np
 import itertools
 from collections import namedtuple
 
-from supernodes import Node
+from .supernodes import Node
 from ....interfaces import base as nib
 
 #TODO: list as input should be also ok 
