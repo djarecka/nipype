@@ -24,6 +24,7 @@ from copy import deepcopy
 import re
 import numpy as np
 from .... import logging
+import itertools
 from ....interfaces.base import DynamicTraitedSpec
 from ....utils.filemanip import loadpkl, savepkl
 
@@ -165,15 +166,44 @@ class Node(object):
     def load(self, filename):
         return loadpkl(filename)
 
+
+    def run_interface(self, node_states):
+        """ running interface for each element generated from node state.
+            checks self._reducer and reduce the final result.
+            returns a list with results (TODO: should yield?)
+        """
+        results_list = []
+        if self._reducer:
+            if self._reducer in node_states._input_names:
+                reducer_value_dict = {}
+            else:
+                # dj: self._reducer can be at the end also an output (?)
+                raise Exception("reducer is not a valid input name")
+
+        # this should yield at the end, not append to the list
+        for ind in itertools.product(*node_states._all_elements):
+            state_dict = node_states.state_values(ind)
+            if self._reducer:
+                val = state_dict.__getattribute__(self._reducer)
+                if val in reducer_value_dict.keys():
+                    #pdb.set_trace()
+                    results_list[reducer_value_dict[val]][1].append((state_dict, self._interface(*state_dict)))
+                else:
+                    #pdb.set_trace()
+                    reducer_value_dict[val] = len(results_list)
+                    results_list.append(("{} = {}".format(self._reducer, val), [(state_dict, self._interface(*state_dict))]))
+            else:
+                # TODO: it will be later interface.run or something similar
+                results_list.append((state_dict, self._interface(*state_dict)))
+        return results_list
+
+
+
     def run(self):
-        # Map
-        # dj TODO: should I introduce self._state??
-        # should I pass self only? and have node in the init?
-        _state = state.State(state_inputs=self._inputs, mapper=self._mapper)
-        # Function
-        # dj TODO: should be self.interface
-        self._result = _state.yielding_state(self._interface, self._reducer)
-        # Reduce - dj TODO
+        # dj TODO: should I introduce self.states in init??
+        # dj: would have to be updated when self._inputs changes
+        node_states = state.State(state_inputs=self._inputs, mapper=self._mapper)
+        self._result = self.run_interface(node_states)
 
 
 class Workflow(Node):
