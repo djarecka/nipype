@@ -27,7 +27,8 @@ def fun3(a, b):
          [("state(a=3)", 9),("state(a=4)", 16), ("state(a=5)", 25), ("state(a=6)", 36)])
         ])
 def test_singlenode_1(inputs_dict, expected_order, expected_output):
-    nn  = Node(inputs=inputs_dict, mapper="a", interface=fun1,
+    """testing a single node for function that returns only one value"""
+    nn = Node(inputs=inputs_dict, mapper="a", interface=fun1,
                name="single_node_1")
     nn.run()
     state = namedtuple("state", expected_order)
@@ -42,6 +43,7 @@ def test_singlenode_1(inputs_dict, expected_order, expected_output):
          [("state(a=3)", [1, 3, 9, 27]),("state(a=4)", [1, 4, 16, 64]), ("state(a=5)", [1, 5, 25, 125])])
         ])
 def test_singlenode_2(inputs_dict, expected_order, expected_output):
+    """testing a single node for a function that returns a list/array"""
     nn  = Node(inputs=inputs_dict, mapper="a", interface=fun2,
                name="single_node_2")
     nn.run()
@@ -65,6 +67,7 @@ def test_singlenode_2(inputs_dict, expected_order, expected_output):
           ("state(a=8, b=3)", 24)])
         ])
 def test_single_node_3(inputs_dict, expected_order, expected_output):
+    """testing for a single node with two input fields, scalar mapping"""
     nn = Node(interface=fun3, name="single_node_3", mapper=("a", "b"), 
               inputs=inputs_dict)
     nn.run()
@@ -91,6 +94,7 @@ def test_single_node_3(inputs_dict, expected_order, expected_output):
          [("state(a=3, b=2)", 6), ("state(a=1, b=2)", 2)]),
         ])
 def test_single_node_4(inputs_dict, expected_order, expected_output):
+    """testing for a single node with two input fields, outer mapping"""
     nn = Node(interface=fun3, name="single_node_4", mapper=['a','b'],
               inputs=inputs_dict)
     nn.run()
@@ -107,6 +111,7 @@ def test_single_node_4(inputs_dict, expected_order, expected_output):
         {"a":np.array([[3, 1, 1], [0,0, 0]]), "b":np.array([1, 2, 0])},  # think if this should work
         ])
 def test_single_node_wrong_input(inputs_dict):
+    """testing if error is raised when the inputs doesn't meet the mapper"""
     with pytest.raises(Exception) as excinfo:
         nn = Node(interface=fun3, name="single_node_exception",
                   mapper=('a','b'), inputs=inputs_dict)
@@ -115,6 +120,7 @@ def test_single_node_wrong_input(inputs_dict):
 
 
 def test_single_node_wrong_key():
+    """testing if the wrror is raised when inputs key don't match mapper"""
     # TODO: should i specify error?
     with pytest.raises(KeyError):
         nn = Node(interface=fun3, name="single_node_exception", 

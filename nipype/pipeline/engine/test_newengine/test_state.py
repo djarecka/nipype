@@ -53,6 +53,8 @@ from collections import namedtuple
          {'r': [0, 1], 'd': [0, 1], 'w': [2, 3]}, [["d", "r"], ["d", "r"], ["w"], ["w"]], 4)
 ])
 def test_mapping_axis(mapper, mapper_rpn, input, axis_for_inp, inp_for_axis, ndim):
+    """testing if State() create a proper mapper representation,
+        and connect proper variables with proper axes"""
     st = State(state_inputs=input, mapper=mapper)
 
     assert st._mapper_rpn == mapper_rpn
@@ -102,8 +104,9 @@ def test_mapping_axis(mapper, mapper_rpn, input, axis_for_inp, inp_for_axis, ndi
           "state(d=6, w=3, r=1)", "state(d=6, w=4, r=2)"])
          ])
 def test_state_values(mapper, input, expected_order, expected_state_values):
+    """testing state_values(ind) method, should return the correct values for chosen index"""
     st = State(state_inputs=input, mapper=mapper)
-    state = namedtuple("state", expected_order)
+    state = namedtuple("state", expected_order) #used to evaluate expected_state_value
 
     for i, ind in enumerate(itertools.product(*st.all_elements)):
         state_dict = st.state_values(ind)
@@ -122,6 +125,8 @@ def test_state_values(mapper, input, expected_order, expected_state_values):
          ["state(d=3, r=2)", "state(d=5, r=2)", "state(d=4, r=2)"]),
         ])
 def test_state_ind(mapper, input, elements, expected_order, expected_state_values):
+    """testing if I can access the correct elements from State()
+         using __getitem__"""
     st = State(state_inputs=input, mapper=mapper)
     state = namedtuple("state", expected_order)
 
@@ -139,6 +144,7 @@ def test_state_ind(mapper, input, elements, expected_order, expected_state_value
          ["st[0,3]", "st[3,1]", "st[1,1,1]"]), 
         ])
 def test_state_indexerror(mapper, input, elements):
+    """testing if incorrect indexing os State() will raise an error"""
     st = State(state_inputs=input, mapper=mapper)
 
     for i, el in enumerate(elements):

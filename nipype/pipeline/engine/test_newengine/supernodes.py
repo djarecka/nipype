@@ -180,7 +180,7 @@ class Workflow(Node):
     allow_flattening = False
 
     def __init__(self, interface, input_map=None, output_map=None, **kwargs):
-    	raise NotImplementedError
+        raise NotImplementedError
 
     def add_nodes(self, nodes):
         raise NotImplementedError
