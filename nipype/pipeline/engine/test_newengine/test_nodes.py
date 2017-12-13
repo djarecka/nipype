@@ -6,18 +6,34 @@ from collections import namedtuple
 
 from .supernodes import Node
 from ....interfaces import base as nib
+from ....interfaces.utility import Function
 
 #TODO: list as input should be also ok 
 
 def fun1(a):
     return a**2
 
+fun1_interf = Function(input_names=["a"],
+                        output_names=["out"],
+                        function=fun1)
+
+
 def fun2(a):
+    import numpy as np
     pow = np.arange(4)
     return a**pow
 
+fun2_interf = Function(input_names=["a"],
+                        output_names=["out"],
+                        function=fun2)
+
+
 def fun3(a, b):
     return a * b
+
+fun3_interf = Function(input_names=["a", "b"],
+                        output_names=["out"],
+                        function=fun3)
 
 
 @pytest.mark.parametrize("inputs_dict, expected_order, expected_output", [
@@ -28,7 +44,7 @@ def fun3(a, b):
         ])
 def test_singlenode_1(inputs_dict, expected_order, expected_output):
     """testing a single node for function that returns only one value"""
-    nn = Node(inputs=inputs_dict, mapper="a", interface=fun1,
+    nn = Node(inputs=inputs_dict, mapper="a", interface=fun1_interf,
                name="single_node_1")
     nn.run()
     state = namedtuple("state", expected_order)
@@ -44,7 +60,7 @@ def test_singlenode_1(inputs_dict, expected_order, expected_output):
         ])
 def test_singlenode_2(inputs_dict, expected_order, expected_output):
     """testing a single node for a function that returns a list/array"""
-    nn  = Node(inputs=inputs_dict, mapper="a", interface=fun2,
+    nn  = Node(inputs=inputs_dict, mapper="a", interface=fun2_interf,
                name="single_node_2")
     nn.run()
     state = namedtuple("state", expected_order)
@@ -68,7 +84,7 @@ def test_singlenode_2(inputs_dict, expected_order, expected_output):
         ])
 def test_single_node_3(inputs_dict, expected_order, expected_output):
     """testing for a single node with two input fields, scalar mapping"""
-    nn = Node(interface=fun3, name="single_node_3", mapper=("a", "b"), 
+    nn = Node(interface=fun3_interf, name="single_node_3", mapper=("a", "b"),
               inputs=inputs_dict)
     nn.run()
     state = namedtuple("state", expected_order)
@@ -95,7 +111,7 @@ def test_single_node_3(inputs_dict, expected_order, expected_output):
         ])
 def test_single_node_4(inputs_dict, expected_order, expected_output):
     """testing for a single node with two input fields, outer mapping"""
-    nn = Node(interface=fun3, name="single_node_4", mapper=['a','b'],
+    nn = Node(interface=fun3_interf, name="single_node_4", mapper=['a','b'],
               inputs=inputs_dict)
     nn.run()
     state = namedtuple("state", expected_order)
@@ -113,7 +129,7 @@ def test_single_node_4(inputs_dict, expected_order, expected_output):
 def test_single_node_wrong_input(inputs_dict):
     """testing if error is raised when the inputs doesn't meet the mapper"""
     with pytest.raises(Exception) as excinfo:
-        nn = Node(interface=fun3, name="single_node_exception",
+        nn = Node(interface=fun3_interf, name="single_node_exception",
                   mapper=('a','b'), inputs=inputs_dict)
         nn.run()
     assert "should have the same size" in str(excinfo.value)
@@ -123,7 +139,7 @@ def test_single_node_wrong_key():
     """testing if the wrror is raised when inputs key don't match mapper"""
     # TODO: should i specify error?
     with pytest.raises(KeyError):
-        nn = Node(interface=fun3, name="single_node_exception", 
+        nn = Node(interface=fun3_interf, name="single_node_exception",
                   mapper=('a','b'), inputs={"a":[3], "c":[0]})
         nn.run()
 

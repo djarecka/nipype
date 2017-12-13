@@ -30,6 +30,8 @@ from ....utils.filemanip import loadpkl, savepkl
 
 from . import state
 
+import pdb
+
 logger = logging.getLogger('workflow')
 
 
@@ -91,7 +93,10 @@ class Node(object):
         # Basic idea, though I haven't looked up the actual way to do this:
         # self._interface.inputs.clear()
         # self._interface.inputs.update(inputs)
-        pass
+        print("IN SETTER")
+        #pdb.set_trace()
+        self._inputs = inputs
+
 
     @property
     def outputs(self):
@@ -183,18 +188,20 @@ class Node(object):
         # this should yield at the end, not append to the list
         for ind in itertools.product(*node_states._all_elements):
             state_dict = node_states.state_values(ind)
+            res = self._interface.run(**state_dict._asdict())
+            output = res.outputs.out
             if self._reducer:
                 val = state_dict.__getattribute__(self._reducer)
                 if val in reducer_value_dict.keys():
                     #pdb.set_trace()
-                    results_list[reducer_value_dict[val]][1].append((state_dict, self._interface(*state_dict)))
+                    results_list[reducer_value_dict[val]][1].append((state_dict, output))
                 else:
                     #pdb.set_trace()
                     reducer_value_dict[val] = len(results_list)
-                    results_list.append(("{} = {}".format(self._reducer, val), [(state_dict, self._interface(*state_dict))]))
+                    results_list.append(("{} = {}".format(self._reducer, val), [(state_dict, output)]))
             else:
                 # TODO: it will be later interface.run or something similar
-                results_list.append((state_dict, self._interface(*state_dict)))
+                results_list.append((state_dict, output))
         return results_list
 
 

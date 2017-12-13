@@ -6,18 +6,34 @@ from collections import namedtuple
 
 from .supernodes import Node
 from ....interfaces import base as nib
+from ....interfaces.utility import Function
 
 #TODO: list as input should be also ok 
 
 def fun1(a):
     return a**2
 
+fun1_interf = Function(input_names=["a"],
+                        output_names=["out"],
+                        function=fun1)
+
+
 def fun2(a):
+    import numpy as np
     pow = np.arange(4)
     return a**pow
 
+fun2_interf = Function(input_names=["a"],
+                        output_names=["out"],
+                        function=fun2)
+
+
 def fun3(a, b):
     return a * b
+
+fun3_interf = Function(input_names=["a", "b"],
+                        output_names=["out"],
+                        function=fun3)
 
 
 @pytest.mark.parametrize("inputs_dict, expected_order, expected_output, reducer", [
@@ -28,7 +44,7 @@ def fun3(a, b):
         ({"a": np.array([3, 4, 3])}, ["a"], [[("state(a=3)", 9), ("state(a=3)", 9)],[("state(a=4)", 16)]], "a"),
         ])
 def test_singlenode_reducer_1(inputs_dict, expected_order, expected_output, reducer):
-    nn  = Node(inputs=inputs_dict, mapper="a", interface=fun1,
+    nn  = Node(inputs=inputs_dict, mapper="a", interface=fun1_interf,
                name="single_node_1", reducer=reducer)
     nn.run()
     state = namedtuple("state", expected_order)
@@ -47,7 +63,7 @@ def test_singlenode_reducer_1(inputs_dict, expected_order, expected_output, redu
           [("state(a=1, b=1)", 1), ("state(a=1, b=2)", 2), ("state(a=1, b=4)", 4)]], "a"),
         ])
 def test_singlenode_reducer_4(inputs_dict, expected_order, expected_output, reducer):
-    nn = Node(interface=fun3, name="single_node_4", mapper=['a','b'],
+    nn = Node(interface=fun3_interf, name="single_node_4", mapper=['a','b'],
               inputs=inputs_dict, reducer=reducer)
     nn.run()
     state = namedtuple("state", expected_order)
