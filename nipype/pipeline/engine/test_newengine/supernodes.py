@@ -213,14 +213,19 @@ class Node(object):
         self._result = self.run_interface(node_states)
 
 
-class Workflow(Node):
-    allow_flattening = False
+class Workflow(object):
+    #allow_flattening = False #not used for now
 
-    def __init__(self, interface, input_map=None, output_map=None, **kwargs):
-        raise NotImplementedError
+    def __init__(self, nodes, **kwargs):
+        self._nodes = nodes
+
+
+    @property
+    def nodes(self):
+        return self._nodes
 
     def add_nodes(self, nodes):
-        raise NotImplementedError
+        self.nodes += nodes
 
     def connect(self, from_node, from_socket, to_node, to_socket):
         raise NotImplementedError
