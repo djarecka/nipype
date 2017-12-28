@@ -23,6 +23,7 @@ standard_library.install_aliases()
 from copy import deepcopy
 import re
 import numpy as np
+import networkx as nx
 from .... import logging
 import itertools
 from ....interfaces.base import DynamicTraitedSpec
@@ -216,19 +217,43 @@ class Node(object):
 class Workflow(object):
     #allow_flattening = False #not used for now
 
-    def __init__(self, nodes, **kwargs):
-        self._nodes = nodes
+    def __init__(self, nodes=None, **kwargs):
+        self.graph = nx.DiGraph()
+        if nodes:
+            self._nodes = nodes
+            self.graph.add_nodes_from(nodes)
+        else:
+            self._nodes = []
+        self.connected_var = {}
 
 
     @property
     def nodes(self):
         return self._nodes
 
+
     def add_nodes(self, nodes):
-        self.nodes += nodes
+        self._nodes += nodes
+        self.graph.add_nodes_from(nodes)
+        for nn in nodes:
+            self.connected_var[nn] = {}
+
 
     def connect(self, from_node, from_socket, to_node, to_socket):
-        raise NotImplementedError
+        self.graph.add_edges_from([(from_node, to_node)])
+        if not to_node in self.nodes:
+            self.add_nodes(to_node)
+        self.connected_var[to_node][to_socket] = from_socket
 
-    def run(monitor_consumption=True):
-        raise NotImplementedError
+
+    def run(self, monitor_consumption=True):
+        self.graph_sorted = list(nx.topological_sort(self.graph))
+        for nn in self.graph_sorted:
+            try:
+                for inp, out in self.connected_var[nn].items():
+                    pdb.set_trace()
+                    nn.inputs, inp = out
+                    #setattr(nn.inputs, inp) = out
+            except(KeyError):
+                pass
+            nn.run()
