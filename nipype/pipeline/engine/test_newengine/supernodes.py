@@ -57,7 +57,10 @@ class Node(object):
             default=None, which results in the use of mkdtemp
 
         """
-        self._inputs = inputs
+        if inputs:
+            self._inputs = inputs
+        else:
+            self._inputs = {}
         self._interface = interface
         self.base_dir = base_dir
         # dj TODO: do i need it?
@@ -190,7 +193,7 @@ class Node(object):
         for ind in itertools.product(*node_states._all_elements):
             state_dict = node_states.state_values(ind)
             res = self._interface.run(**state_dict._asdict())
-            output = res.outputs.out
+            output = res.outputs
             if self._reducer:
                 val = state_dict.__getattribute__(self._reducer)
                 if val in reducer_value_dict.keys():
@@ -243,7 +246,7 @@ class Workflow(object):
         self.graph.add_edges_from([(from_node, to_node)])
         if not to_node in self.nodes:
             self.add_nodes(to_node)
-        self.connected_var[to_node][to_socket] = from_socket
+        self.connected_var[to_node][to_socket] = (from_node, from_socket)
 
 
     def run(self, monitor_consumption=True):
@@ -251,9 +254,8 @@ class Workflow(object):
         for nn in self.graph_sorted:
             try:
                 for inp, out in self.connected_var[nn].items():
-                    pdb.set_trace()
-                    nn.inputs, inp = out
-                    #setattr(nn.inputs, inp) = out
+                    (node_nm, var_nm) = self.connected_var[nn][inp]
+                    nn.inputs[inp] = np.array([getattr(ii[1], var_nm) for ii in node_nm.result])
             except(KeyError):
                 pass
             nn.run()

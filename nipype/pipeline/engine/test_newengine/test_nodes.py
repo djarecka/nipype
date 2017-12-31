@@ -39,7 +39,7 @@ fun3_interf = Function(input_names=["a", "b"],
 @pytest.mark.parametrize("inputs_dict, expected_order, expected_output", [
         ({"a": np.array([3, 4, 5])}, ["a"], [("state(a=3)", 9),("state(a=4)", 16), ("state(a=5)", 25)]),
         # do we want to allow 2D inputs a, when mapper="a"?
-        ({"a": np.array([[3, 4], [5, 6]])}, ["a"], 
+        ({"a": np.array([[3, 4], [5, 6]])}, ["a"],
          [("state(a=3)", 9),("state(a=4)", 16), ("state(a=5)", 25), ("state(a=6)", 36)])
         ])
 def test_singlenode_1(inputs_dict, expected_order, expected_output):
@@ -51,7 +51,7 @@ def test_singlenode_1(inputs_dict, expected_order, expected_output):
 
     for (i, out) in enumerate(nn.result):
         assert out[0] == eval(expected_output[i][0]) # checking state values
-        assert (out[1] == expected_output[i][1]).all() # assuming that output value is an array (all() is used)
+        assert (out[1].out == expected_output[i][1]).all() # assuming that output value is an array (all() is used)
 
 
 @pytest.mark.parametrize("inputs_dict, expected_order, expected_output", [
@@ -70,7 +70,7 @@ def test_singlenode_1a(inputs_dict, expected_order, expected_output):
 
     for (i, out) in enumerate(nn.result):
         assert out[0] == eval(expected_output[i][0]) # checking state values
-        assert (out[1] == expected_output[i][1]).all() # assuming that output value is an array (all() is used)
+        assert (out[1].out == expected_output[i][1]).all() # assuming that output value is an array (all() is used)
 
 
 @pytest.mark.parametrize("inputs_dict, expected_order, expected_output", [
@@ -86,7 +86,7 @@ def test_singlenode_2(inputs_dict, expected_order, expected_output):
     
     for (i, out) in enumerate(nn.result):
         assert out[0] == eval(expected_output[i][0])
-        assert (out[1] == expected_output[i][1]).all()
+        assert (out[1].out == expected_output[i][1]).all()
 
 
 
@@ -110,7 +110,7 @@ def test_single_node_3(inputs_dict, expected_order, expected_output):
 
     for (i, out) in enumerate(nn.result):
         assert out[0] == eval(expected_output[i][0]) 
-        assert out[1] == expected_output[i][1] #dj: do i need ".all()"?
+        assert out[1].out == expected_output[i][1] #dj: do i need ".all()"?
 
 #TODO !!! should I keep the 2d array structure?? - see atest_single_node.py
 #TODO: what should be the order of results
@@ -137,7 +137,7 @@ def test_single_node_4(inputs_dict, expected_order, expected_output):
 
     for (i, out) in enumerate(nn.result):
         assert out[0] == eval(expected_output[i][0])
-        assert (out[1] == expected_output[i][1]).all()
+        assert (out[1].out == expected_output[i][1]).all()
 
 
 @pytest.mark.parametrize("inputs_dict", [

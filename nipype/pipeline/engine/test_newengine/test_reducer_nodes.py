@@ -53,7 +53,7 @@ def test_singlenode_reducer_1(inputs_dict, expected_order, expected_output, redu
         #assert out_red[0] == "{} = {}".format(reducer, set(inputs_dict[reducer].flatten())[ii])
         for (jj, out) in enumerate(out_red[1]):
             assert out[0] == eval(expected_output[ii][jj][0]) # checking state values
-            assert (out[1] == expected_output[ii][jj][1]).all() # assuming that output value is an array (all() is used)
+            assert (out[1].out == expected_output[ii][jj][1]).all() # assuming that output value is an array (all() is used)
 
 
 @pytest.mark.parametrize("inputs_dict, expected_order, expected_output, reducer", [
@@ -70,5 +70,5 @@ def test_singlenode_reducer_4(inputs_dict, expected_order, expected_output, redu
     for (ii, out_red) in enumerate(nn.result):
         for (jj, out) in enumerate(out_red[1]):
             assert out[0] == eval(expected_output[ii][jj][0])
-            assert (out[1] == expected_output[ii][jj][1]).all()
+            assert (out[1].out == expected_output[ii][jj][1]).all()
 
