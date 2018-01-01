@@ -57,22 +57,27 @@ class Node(object):
             default=None, which results in the use of mkdtemp
 
         """
+        self._mapper = mapper
+        # dj TODO: check when it should be moved to self._state_*
+        self._state_mapper = self._mapper
+        self._reducer = reducer
         if inputs:
-            self._inputs = inputs
+            self.setting_inputs_states(inputs)
         else:
             self._inputs = {}
+            self._state_inputs = {}
+
         self._interface = interface
         self.base_dir = base_dir
         # dj TODO: do i need it?
         self.config = None
         self._verify_name(name)
         self.name = name
-        self._mapper = mapper
-        self._reducer = reducer
         # dj TODO: do I need _id and _hierarchy?
         # for compatibility with node expansion using iterables
         self._id = self.name
         self._hierarchy = None
+
 
     @property
     def result(self):
@@ -98,9 +103,7 @@ class Node(object):
         # self._interface.inputs.clear()
         # self._interface.inputs.update(inputs)
         print("IN SETTER")
-        #pdb.set_trace()
-        self._inputs = inputs
-
+        self.setting_inputs_states(inputs)
 
     @property
     def outputs(self):
@@ -126,6 +129,16 @@ class Node(object):
         if self._hierarchy:
             itername = self._hierarchy + '.' + self._id
         return itername
+
+
+    def setting_inputs_states(self, inputs):
+        self._inputs = inputs
+        # dj: contains value of inputs
+        self.node_states_inputs = state.State(state_inputs=self._inputs, mapper=self._mapper)
+        # dj: i would need extra dictionaries for state in workflow
+        self._state_inputs = self._inputs.copy()
+        self.node_states = state.State(state_inputs=self._state_inputs, mapper=self._state_mapper)
+
 
     # dj TODO: when do we need clone?
     def clone(self, name):
@@ -176,31 +189,30 @@ class Node(object):
         return loadpkl(filename)
 
 
-    def run_interface(self, node_states):
+    def run_interface(self):
         """ running interface for each element generated from node state.
             checks self._reducer and reduce the final result.
             returns a list with results (TODO: should yield?)
         """
         results_list = []
         if self._reducer:
-            if self._reducer in node_states._input_names:
+            if self._reducer in self.node_states._input_names:
                 reducer_value_dict = {}
             else:
                 # dj: self._reducer can be at the end also an output (?)
                 raise Exception("reducer is not a valid input name")
 
         # this should yield at the end, not append to the list
-        for ind in itertools.product(*node_states._all_elements):
-            state_dict = node_states.state_values(ind)
-            res = self._interface.run(**state_dict._asdict())
+        for ind in itertools.product(*self.node_states._all_elements):
+            inputs_dict = self.node_states_inputs.state_values(ind)
+            state_dict = self.node_states.state_values(ind)
+            res = self._interface.run(**inputs_dict._asdict())
             output = res.outputs
             if self._reducer:
                 val = state_dict.__getattribute__(self._reducer)
                 if val in reducer_value_dict.keys():
-                    #pdb.set_trace()
                     results_list[reducer_value_dict[val]][1].append((state_dict, output))
                 else:
-                    #pdb.set_trace()
                     reducer_value_dict[val] = len(results_list)
                     results_list.append(("{} = {}".format(self._reducer, val), [(state_dict, output)]))
             else:
@@ -211,10 +223,7 @@ class Node(object):
 
 
     def run(self):
-        # dj TODO: should I introduce self.states in init??
-        # dj: would have to be updated when self._inputs changes
-        node_states = state.State(state_inputs=self._inputs, mapper=self._mapper)
-        self._result = self.run_interface(node_states)
+        self._result = self.run_interface()
 
 
 class Workflow(object):
@@ -255,7 +264,11 @@ class Workflow(object):
             try:
                 for inp, out in self.connected_var[nn].items():
                     (node_nm, var_nm) = self.connected_var[nn][inp]
-                    nn.inputs[inp] = np.array([getattr(ii[1], var_nm) for ii in node_nm.result])
+                    nn.inputs.update({inp: np.array([getattr(ii[1], var_nm) for ii in node_nm.result])})
+                    nn._state_inputs.update(node_nm._state_inputs)
+                    nn._state_mapper = nn._state_mapper.replace(inp, node_nm._state_mapper)
+                    nn.node_states = state.State(state_inputs=nn._state_inputs, mapper=nn._state_mapper)
+                    nn.node_states_inputs = state.State(state_inputs=nn._inputs, mapper=nn._mapper)
             except(KeyError):
                 pass
             nn.run()

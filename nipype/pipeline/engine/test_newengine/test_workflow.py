@@ -131,12 +131,10 @@ def test_workflow_not_connected_nodes_1(inputs_dict, fun1, fun2, expected_order,
 @pytest.mark.parametrize("inputs_dict, fun1, fun2, expected_order, expected_output", [
         ({"a": np.array([3, 4, 5])}, "fun1_interf", "fun1a_interf", ["a"],
          [[("state(a=3)", 9),("state(a=4)", 16), ("state(a=5)", 25)],
-          [("state(a=9)", 19),("state(a=16)", 26), ("state(a=25)", 35)]]),
+          [("state(a=3)", 19),("state(a=4)", 26), ("state(a=5)", 35)]]),
          ({"a": np.array([3, 4])}, "fun2_interf", "fun1a_interf", ["a"],
          [[("state(a=3)", [1, 3, 9, 27]), ("state(a=4)", [1, 4, 16, 64])],
-          # DJ: not sure if this should be the expected behavior (i.e. one value of a per state)
-          [("state(a=1)", [11]), ("state(a=3)", [13]), ("state(a=9)", [19]), ("state(a=27)", [37]),
-           ("state(a=1)", [11]), ("state(a=4)", [14]), ("state(a=16)", [26]), ("state(a=64)", [74])]])
+          [("state(a=3)", [11, 13, 19, 37]), ("state(a=4)", [11, 14, 26, 74])]])
 ])
 def test_workflow_connected_nodes_1(inputs_dict, fun1, fun2, expected_order, expected_output):
     """testing workflow with two nodes that have no connections"""

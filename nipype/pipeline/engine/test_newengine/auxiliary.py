@@ -31,7 +31,6 @@ def mapper2rpn(mapper):
     return output_mapper
 
 
-
 def mapping_axis(state_inputs, mapper_rpn):
     axis_for_input = {}
     stack = []
