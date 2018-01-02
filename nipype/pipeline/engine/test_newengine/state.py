@@ -17,8 +17,10 @@ class State(object):
             # e.g. if mapper=('d', ['e', 'r']), _mapper_rpn=['d', 'e', 'r', '*', '.']
             self._mapper_rpn = aux.mapper2rpn(self._mapper)
 
-        self._input_names = [i for i in self._mapper_rpn if i not in ["*", "."]]
-        self._state_tuple = namedtuple("state_tuple", self._input_names)
+        self._input_names_mapper = [i for i in self._mapper_rpn if i not in ["*", "."]]
+        self._input_names = self.state_inputs.keys()
+        # will use alphabetic order
+        self._state_tuple = namedtuple("state_tuple", sorted(self._input_names))
 
         #pdb.set_trace()
         # dictionary[key=input names] = list of axes related to
@@ -100,6 +102,10 @@ class State(object):
             # taking the indexes related to the axes 
             ind_inp = ind[sl_ax]
             state_dict[input] = self.state_inputs[input][ind_inp]
+
+        # adding values from input that are not used in the mapper
+        for input in set(self._input_names) - set(self._input_names_mapper):
+            state_dict[input] = self.state_inputs[input]
 
         # returning a named tuple
         return self._state_tuple(**state_dict)

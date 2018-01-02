@@ -70,11 +70,11 @@ def test_mapping_axis(mapper, mapper_rpn, input, axis_for_inp, inp_for_axis, ndi
         (('d', 'r'), {"d":np.array([3,4,5]), "r":np.array([1,2,3])}, ["d", "r"], 
          ["state(d=3, r=1)", "state(d=4, r=2)", "state(d=5, r=3)"]),
 
-        (('r', 'd'), {"d":np.array([[3,4],[5,6]]), "r":np.array([[1,2],[3,3]])}, ['r', 'd'], 
+        (('r', 'd'), {"d":np.array([[3,4],[5,6]]), "r":np.array([[1,2],[3,3]])}, ['d', 'r'],
          ["state(r=1, d=3)", "state(r=2, d=4)", "state(r=3, d=5)", "state(r=3, d=6)"]),
 
         ((("d", "r"), "e"), {"d":np.array([3,4,5]), "r":np.array([1,2,3]), "e":np.array([1,2,3])},
-         ['d', 'r', 'e'],
+         ['d', 'e', 'r'],
          ["state(d=3, r=1, e=1)", "state(d=4, r=2, e=2)", "state(d=5, r=3, e=3)"]),
 
         (["d", "r"], {"d":np.array([3,4,5]), "r":np.array([1,2,3])}, ['d', 'r'], 
@@ -83,12 +83,12 @@ def test_mapping_axis(mapper, mapper_rpn, input, axis_for_inp, inp_for_axis, ndi
           "state(d=5, r=1)", "state(d=5, r=2)", "state(d=5, r=3)"]),
 
         ([('d', 'r'), "e"], {"d":np.array([3,4,5]), "r":np.array([1,2,3]), "e":np.array([1,2])},
-         ["d", "r", "e"],
+         ["d", "e", "r"],
          ["state(d=3, r=1, e=1)", "state(d=3, r=1, e=2)", "state(d=4, r=2, e=1)",
           "state(d=4, r=2, e=2)", "state(d=5, r=3, e=1)", "state(d=5, r=3, e=2)"]),
 
         (['d', ('r', 'e')], {"d":np.array([3,4]), "r":np.array([1,2,3]), "e":np.array([1,2,3])}, 
-         ["d", "r", "e"],
+         ["d", "e", "r"],
          ["state(d=3, r=1, e=1)", "state(d=3, r=2, e=2)", "state(d=3, r=3, e=3)",
           "state(d=4, r=1, e=1)", "state(d=4, r=2, e=2)", "state(d=4, r=3, e=3)"]),
 
@@ -98,7 +98,7 @@ def test_mapping_axis(mapper, mapper_rpn, input, axis_for_inp, inp_for_axis, ndi
           "state(d=6, r=1, e=2)", "state(d=7, r=2, e=2)", "state(d=8, r=3, e=2)"]),
 
         (['d', ('w', 'r')],
-         {"d":np.array([[3,4],[5,6]]), "r":np.array([1,2]), "w":np.array([3,4])}, ['d', 'w', 'r'],
+         {"d":np.array([[3,4],[5,6]]), "r":np.array([1,2]), "w":np.array([3,4])}, ['d', 'r', 'w'],
          ["state(d=3, w=3, r=1)", "state(d=3, w=4, r=2)", "state(d=4, w=3, r=1)", 
           "state(d=4, w=4, r=2)", "state(d=5, w=3, r=1)", "state(d=5, w=4, r=2)", 
           "state(d=6, w=3, r=1)", "state(d=6, w=4, r=2)"])
@@ -118,7 +118,7 @@ def test_state_values(mapper, input, expected_order, expected_state_values):
          ["d", "r"], ["state(d=3, r=1)", "state(d=5, r=3)"]),
 
         (('r', 'd'), {"d":np.array([[3,4],[5,6]]), "r":np.array([[1,2],[3,3]])},
-         ["st[0,1]", "st[1,0]"], ["r", "d"], ["state(r=2, d=4)", "state(r=3, d=5)"]),
+         ["st[0,1]", "st[1,0]"], ["d", "r"], ["state(r=2, d=4)", "state(r=3, d=5)"]),
 
         (["d", "r"], {"d":np.array([3,4,5]), "r":np.array([1,2,3])}, 
          ["st[0,1]", "st[2,1]", "st[1,1]"], ["d", "r"],

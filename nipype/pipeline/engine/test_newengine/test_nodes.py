@@ -140,6 +140,35 @@ def test_single_node_4(inputs_dict, expected_order, expected_output):
         assert (out[1].out == expected_output[i][1]).all()
 
 
+@pytest.mark.parametrize("inputs_dict, expected_order, expected_output", [
+        # mapper contains a only, b is provided as one element
+        ({"a":np.array([3, 1, 8]), "b":np.array([2])}, ["a", "b"],
+         [("state(a=3, b=np.array([2]))", np.array([6])), ("state(a=1, b=np.array([2]))", np.array([2])),
+          ("state(a=8, b=np.array([2]))", np.array([16]))]),
+        ({"a": np.array([3, 1, 8]), "b": 2}, ["a", "b"],
+         [("state(a=3, b=2)", 6), ("state(a=1, b=2)", 2), ("state(a=8, b=2)", 16)]),
+        ({"a": np.array([3, 1, 8]), "b": np.array([1, 2])}, ["a", "b"],
+         [("state(a=3, b=np.array([1, 2]))", np.array([3, 6])),
+          ("state(a=1, b=np.array([1, 2]))", np.array([1, 2])),
+          ("state(a=8, b=np.array([1, 2]))", np.array([8, 16]))]),
+        ])
+def test_single_node_5(inputs_dict, expected_order, expected_output):
+    """testing for a single node with two input fields, scalar mapping"""
+    nn = Node(interface=fun3_interf, name="single_node_3", mapper="a",
+              inputs=inputs_dict)
+
+    nn.run()
+    state = namedtuple("state", expected_order)
+
+    for (i, out) in enumerate(nn.result):
+        assert out[0].a == eval(expected_output[i][0]).a
+        try:
+            assert (out[0].b == eval(expected_output[i][0]).b).all()
+        except:
+            assert out[0].b == eval(expected_output[i][0]).b
+        assert (out[1].out == expected_output[i][1]).all()
+
+
 @pytest.mark.parametrize("inputs_dict", [
         {"a":np.array([[3, 1], [0,0]]), "b":np.array([1, 2, 0])},
         {"a":np.array([[3, 1], [0,0], [1, 1]]), "b":np.array([1, 2, 0])}, # think if this should work

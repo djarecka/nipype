@@ -165,6 +165,12 @@ def test_workflow_connected_nodes_1(inputs_dict, fun1, fun2, expected_order, exp
            [("state(a=3, b=1)", 9), ("state(a=3, b=2)", 18), ("state(a=3, b=3)", 27),
             ("state(a=4, b=1)", 16), ("state(a=4, b=2)", 32), ("state(a=4, b=3)", 48),
             ("state(a=5, b=1)", 25), ("state(a=5, b=2)", 50), ("state(a=5, b=3)", 75)]]),
+        ([{"a": np.array([3, 4, 5])}, {"b": np.array([1, 2, 3])}], ["fun1_interf", "fun3_interf"],
+         [["a"], ["a"]], [["a"], ["a", "b"]],
+         [[("state(a=3)", 9), ("state(a=4)", 16), ("state(a=5)", 25)],
+         [("state(a=3, b=np.array([1, 2, 3]))", np.array([9, 18, 27])),
+          ("state(a=4, b=np.array([1, 2, 3]))", np.array([16, 32, 48])),
+          ("state(a=5, b=np.array([1, 2, 3]))", np.array([25, 50, 75]))]])
 ])
 def test_workflow_connected_nodes_2(inputs_dict, functions, mappers, expected_order, expected_output):
     """testing workflow with two nodes and a mapper"""
@@ -180,5 +186,7 @@ def test_workflow_connected_nodes_2(inputs_dict, functions, mappers, expected_or
     for ni in range(2):
         state = namedtuple("state", expected_order[ni])
         for (i, out) in enumerate(wf.nodes[ni].result):
-            assert out[0] == eval(expected_output[ni][i][0]) # checking state values
+            assert out[0].a == eval(expected_output[ni][i][0]).a
+            if ni == 1:
+                assert (out[0].b == eval(expected_output[ni][i][0]).b).all()
             assert (out[1].out == expected_output[ni][i][1]).all() # assuming that output value is an array (all() is used)
