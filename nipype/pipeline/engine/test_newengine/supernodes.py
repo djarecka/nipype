@@ -62,7 +62,9 @@ class Node(object):
         self._state_mapper = self._mapper
         self._reducer = reducer
         if inputs:
-            self.setting_inputs_states(inputs)
+            self._inputs = inputs
+            # dj: i would need extra dictionaries for state in workflow
+            self._state_inputs = self._inputs.copy()
         else:
             self._inputs = {}
             self._state_inputs = {}
@@ -103,7 +105,10 @@ class Node(object):
         # self._interface.inputs.clear()
         # self._interface.inputs.update(inputs)
         print("IN SETTER")
-        self.setting_inputs_states(inputs)
+        self._inputs = inputs
+        # dj: i would need extra dictionaries for state in workflow
+        self._state_inputs = self._inputs.copy()
+
 
     @property
     def outputs(self):
@@ -129,15 +134,6 @@ class Node(object):
         if self._hierarchy:
             itername = self._hierarchy + '.' + self._id
         return itername
-
-
-    def setting_inputs_states(self, inputs):
-        self._inputs = inputs
-        # dj: contains value of inputs
-        self.node_states_inputs = state.State(state_inputs=self._inputs, mapper=self._mapper)
-        # dj: i would need extra dictionaries for state in workflow
-        self._state_inputs = self._inputs.copy()
-        self.node_states = state.State(state_inputs=self._state_inputs, mapper=self._state_mapper)
 
 
     # dj TODO: when do we need clone?
@@ -223,6 +219,10 @@ class Node(object):
 
 
     def run(self):
+        # dj: contains value of inputs
+        self.node_states_inputs = state.State(state_inputs=self._inputs, mapper=self._mapper)
+        # dj: contains value of state inputs
+        self.node_states = state.State(state_inputs=self._state_inputs, mapper=self._state_mapper)
         self._result = self.run_interface()
 
 
@@ -266,9 +266,13 @@ class Workflow(object):
                     (node_nm, var_nm) = self.connected_var[nn][inp]
                     nn.inputs.update({inp: np.array([getattr(ii[1], var_nm) for ii in node_nm.result])})
                     nn._state_inputs.update(node_nm._state_inputs)
-                    nn._state_mapper = nn._state_mapper.replace(inp, node_nm._state_mapper)
-                    nn.node_states = state.State(state_inputs=nn._state_inputs, mapper=nn._state_mapper)
-                    nn.node_states_inputs = state.State(state_inputs=nn._inputs, mapper=nn._mapper)
+                    if type(nn._state_mapper) is str:
+                        nn._state_mapper = nn._state_mapper.replace(inp, node_nm._state_mapper)
+                    elif type(nn._state_mapper) is tuple:
+                        nn._state_mapper = tuple([node_nm._state_mapper if ii==inp else ii for ii in nn._state_mapper])
+                    elif type(nn._state_mapper) is list:
+                        nn._state_mapper = [node_nm._state_mapper if ii == inp else ii for ii in nn._state_mapper]
             except(KeyError):
                 pass
+
             nn.run()
