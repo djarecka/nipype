@@ -62,7 +62,7 @@ def test_singlenode_reducer_1(inputs_dict, expected_order, expected_output, redu
          [[("state(a=3, b=1)", 3), ("state(a=3, b=2)", 6), ("state(a=3, b=4)", 12)],
           [("state(a=1, b=1)", 1), ("state(a=1, b=2)", 2), ("state(a=1, b=4)", 4)]], "a"),
         ])
-def test_singlenode_reducer_4(inputs_dict, expected_order, expected_output, reducer):
+def test_singlenode_reducer_2(inputs_dict, expected_order, expected_output, reducer):
     nn = Node(interface=fun3_interf, name="single_node_4", mapper=['a','b'],
               inputs=inputs_dict, reducer=reducer)
     nn.run()

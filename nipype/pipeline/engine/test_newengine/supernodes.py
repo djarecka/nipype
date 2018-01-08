@@ -264,8 +264,17 @@ class Workflow(object):
             try:
                 for inp, out in self.connected_var[nn].items():
                     (node_nm, var_nm) = self.connected_var[nn][inp]
-                    nn.inputs.update({inp: np.array([getattr(ii[1], var_nm) for ii in node_nm.result])})
-                    nn._state_inputs.update(node_nm._state_inputs)
+                    # dj: this would have to be modified for bigger number of reducers
+                    if node_nm._reducer:
+                        tmp = [ii[1] for ii in node_nm.result]
+                        res = []
+                        for li in tmp: 
+                            res.append([i[1].out for i in li])
+                        nn.inputs.update({inp: np.array(res)})
+                        nn._state_inputs.update(node_nm._state_inputs)
+                    else:
+                        nn.inputs.update({inp: np.array([getattr(ii[1], var_nm) for ii in node_nm.result])})
+                        nn._state_inputs.update(node_nm._state_inputs)
                     if type(nn._state_mapper) is str:
                         nn._state_mapper = nn._state_mapper.replace(inp, node_nm._state_mapper)
                     elif type(nn._state_mapper) is tuple:
