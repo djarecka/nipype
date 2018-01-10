@@ -16,6 +16,7 @@ The `EngineBase` class implements the more general view of a task.
 """
 from __future__ import print_function, division, unicode_literals, absolute_import
 from builtins import object
+from collections import namedtuple
 
 from future import standard_library
 standard_library.install_aliases()
@@ -40,8 +41,8 @@ class Node(object):
     """Defines common attributes and functions for workflows and nodes."""
 
     #dj: can mapper be None??
-    def __init__(self, interface, name, mapper=None, reducer=None, inputs=None,
-                 base_dir=None):
+    def __init__(self, interface, name, mapper=None, reducer=None, reducer_interface=None,
+                 inputs=None, base_dir=None):
         """ Initialize base parameters of a workflow or node
 
         Parameters
@@ -61,6 +62,7 @@ class Node(object):
         # dj TODO: check when it should be moved to self._state_*
         self._state_mapper = self._mapper
         self._reducer = reducer
+        self._reducer_interface = reducer_interface
         if inputs:
             self._inputs = inputs
             # dj: i would need extra dictionaries for state in workflow
@@ -192,6 +194,8 @@ class Node(object):
         """
         results_list = []
         if self._reducer:
+            red_val_l = []
+        if self._reducer:
             if self._reducer in self.node_states._input_names:
                 reducer_value_dict = {}
             else:
@@ -211,9 +215,21 @@ class Node(object):
                 else:
                     reducer_value_dict[val] = len(results_list)
                     results_list.append(("{} = {}".format(self._reducer, val), [(state_dict, output)]))
+                    red_val_l.append(val)
             else:
                 # TODO: it will be later interface.run or something similar
                 results_list.append((state_dict, output))
+
+        if self._reducer_interface:
+            results_list_red = []
+            # TODO assuming for now that is only one field in the reducer
+            for ii, (st_el, res_el) in enumerate(results_list):
+                values_l = [i[1].out for i in res_el]
+                res_red = self._reducer_interface.run(out=values_l) #assuming one val for now
+                state_tuple_red = namedtuple("state_tuple", sorted(self._reducer))
+                results_list_red.append((state_tuple_red(red_val_l[ii]), res_red.outputs))
+            return results_list_red
+
         return results_list
 
 
@@ -264,17 +280,8 @@ class Workflow(object):
             try:
                 for inp, out in self.connected_var[nn].items():
                     (node_nm, var_nm) = self.connected_var[nn][inp]
-                    # dj: this would have to be modified for bigger number of reducers
-                    if node_nm._reducer:
-                        tmp = [ii[1] for ii in node_nm.result]
-                        res = []
-                        for li in tmp: 
-                            res.append([i[1].out for i in li])
-                        nn.inputs.update({inp: np.array(res)})
-                        nn._state_inputs.update(node_nm._state_inputs)
-                    else:
-                        nn.inputs.update({inp: np.array([getattr(ii[1], var_nm) for ii in node_nm.result])})
-                        nn._state_inputs.update(node_nm._state_inputs)
+                    nn.inputs.update({inp: np.array([getattr(ii[1], var_nm) for ii in node_nm.result])})
+                    nn._state_inputs.update(node_nm._state_inputs)
                     if type(nn._state_mapper) is str:
                         nn._state_mapper = nn._state_mapper.replace(inp, node_nm._state_mapper)
                     elif type(nn._state_mapper) is tuple:

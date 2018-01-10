@@ -63,6 +63,15 @@ fun4_interf = Function(input_names=["a"],
                        function=fun4)
 
 
+def fun4red(out):
+    import numpy as np
+    return np.array(out).sum()
+
+fun4red_interf = Function(input_names=["out"],
+                       output_names=["out_red"],
+                       function=fun4red)
+
+
 def fun5(a, b):
     import numpy as np
     return b * np.array(a).sum()
@@ -314,17 +323,10 @@ def test_workflow_connected_nodes_2(inputs_dict, functions, mappers, expected_or
            [[("state(a=3, b=1)", 9), ("state(a=4, b=1)", 16), ("state(a=5, b=1)", 25)],
             [("state(a=3, b=2)", 18), ("state(a=4, b=2)", 32), ("state(a=5, b=2)", 50)],
             [("state(a=3, b=3)", 27), ("state(a=4, b=3)", 48), ("state(a=5, b=3)", 75)]]]),
-
-         # dj: nie wiem jak zrobic, aby po reduce traktowal to jako jeden el.
-         ([{"a": np.array([3, 4, 5])}, {"b": np.array([1, 1, 1])}], ["fun1_interf", "fun4_interf"], 
-          [["a"], ("a", "b")], ["a", None], [["a"], ["a", "b"]],
-         [[[("state(a=3)", 9)], [("state(a=4)", 16)], [("state(a=5)", 25)]],
-          [("state(a=3, b=1)", 9), ("state(a=4, b=1)", 16), ("state(a=5, b=1)", 25)]]),
-
 ])
-def test_workflow_connected_nodes_reducer(inputs_dict, functions, mappers, reducers, 
+def test_workflow_connected_nodes_reducer_1(inputs_dict, functions, mappers, reducers,
                                           expected_order, expected_output):
-    """testing workflow with two nodes, a mapper and a reducer"""
+    """testing workflow with two nodes, a mapper and a reducer (in the second node)"""
     nn1 = Node(inputs=inputs_dict[0], mapper=mappers[0], interface=eval(functions[0]),
               name="node_1", reducer=reducers[0])
     nn2 = Node(mapper=mappers[1], inputs=inputs_dict[1], interface=eval(functions[1]),
@@ -351,4 +353,69 @@ def test_workflow_connected_nodes_reducer(inputs_dict, functions, mappers, reduc
                 assert out[0].a == eval(expected_output[ni][i][0]).a
                 if ni == 1:
                     assert (out[0].b == eval(expected_output[ni][i][0]).b).all()
+                assert (out[1].out == expected_output[ni][i][1]).all()
+
+
+@pytest.mark.parametrize("inputs_dict, functions, mappers, reducers, expected_order, expected_output", [
+        # scalar mapper, reducer in the second node with reducing fun
+        ([{"a": np.array([3, 4, 5])}, {"b": np.array([1, 2, 3])}], ["fun1_interf", "fun3_interf"],
+         [["a"], ["a", "b"]], [None, "a"], [["a"], ["a"]],
+         [[("state(a=3)", 9), ("state(a=4)", 16), ("state(a=5)", 25)],
+           [("state(a=3)", 54), ("state(a=4)", 96), ("state(a=5)", 150)]]),
+])
+def test_workflow_connected_nodes_reducer_1a(inputs_dict, functions, mappers, reducers,
+                                          expected_order, expected_output):
+    """testing workflow with two nodes, a mapper and a reducer (in the second node)"""
+    nn1 = Node(inputs=inputs_dict[0], mapper=mappers[0], interface=eval(functions[0]),
+              name="node_1", reducer=reducers[0])
+    nn2 = Node(mapper=mappers[1], inputs=inputs_dict[1], interface=eval(functions[1]),
+              name="node_2", reducer=reducers[1], reducer_interface=fun4red_interf)
+    wf = Workflow(name="workflow_1a")
+    wf.add_nodes([nn1, nn2])
+    wf.connect(nn1, "out", nn2, "a")
+
+    wf.run()
+
+    for ni in range(2):
+        state = namedtuple("state", expected_order[ni])
+        for (i, out) in enumerate(wf.nodes[ni].result):
+            if ni == 0:
+                assert out[0].a == eval(expected_output[ni][i][0]).a
+                assert (out[1].out == expected_output[ni][i][1]).all()
+            if ni == 1:
+                assert (out[0].a == eval(expected_output[ni][i][0]).a).all()
+                assert (out[1].out_red == expected_output[ni][i][1]).all()
+
+
+
+
+@pytest.mark.parametrize("inputs_dict, functions, mappers, reducers, expected_order, expected_output", [
+        # dj: nie wiem jak zrobic, aby po reduce traktowal to jako jeden el.
+         ([{"a": np.array([3, 4, 5])}, {"b": np.array([1, 2, 3])}], ["fun1_interf", "fun3_interf"],
+          [["a"], ("a", "b")], ["a", None], [["a"], ["a", "b"]],
+         [[("state(a=3)", 9), ("state(a=4)", 16), ("state(a=5)", 25)],
+          [("state(a=3, b=1)", 9), ("state(a=4, b=2)", 32), ("state(a=5, b=3)", 75)]]),
+
+])
+def test_workflow_connected_nodes_reducer_2(inputs_dict, functions, mappers, reducers,
+                                          expected_order, expected_output):
+    """testing workflow with two nodes, a mapper and a reducer (in the first node)"""
+    nn1 = Node(inputs=inputs_dict[0], mapper=mappers[0], interface=eval(functions[0]),
+              name="node_1", reducer=reducers[0], reducer_interface=fun4red_interf)
+    nn2 = Node(mapper=mappers[1], inputs=inputs_dict[1], interface=eval(functions[1]),
+              name="node_2", reducer=reducers[1])
+    wf = Workflow(name="workflow_1a")
+    wf.add_nodes([nn1, nn2])
+    wf.connect(nn1, "out_red", nn2, "a")
+
+    wf.run()
+
+    for ni in range(2):
+        state = namedtuple("state", expected_order[ni])
+        for (i, out) in enumerate(wf.nodes[ni].result):
+            if ni == 0:
+                assert out[0].a == eval(expected_output[ni][i][0]).a
+                assert (out[1].out_red == expected_output[ni][i][1]).all()
+            if ni == 1:
+                assert (out[0].b == eval(expected_output[ni][i][0]).b).all()
                 assert (out[1].out == expected_output[ni][i][1]).all()

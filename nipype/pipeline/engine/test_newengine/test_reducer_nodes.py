@@ -35,6 +35,15 @@ fun3_interf = Function(input_names=["a", "b"],
                         output_names=["out"],
                         function=fun3)
 
+#dj TODO: shouldn't have to use out as arg
+def fun4red(out):
+    import numpy as np
+    return np.array(out).sum()
+
+fun4red_interf = Function(input_names=["out"],
+                       output_names=["out_red"],
+                       function=fun4red)
+
 
 @pytest.mark.parametrize("inputs_dict, expected_order, expected_output, reducer", [
         ({"a": np.array([3, 4, 5])}, ["a"], [[("state(a=3)", 9)],[("state(a=4)", 16)], [("state(a=5)", 25)]], "a"),
@@ -72,3 +81,17 @@ def test_singlenode_reducer_2(inputs_dict, expected_order, expected_output, redu
             assert out[0] == eval(expected_output[ii][jj][0])
             assert (out[1].out == expected_output[ii][jj][1]).all()
 
+
+@pytest.mark.parametrize("inputs_dict, expected_order, expected_output, reducer", [
+        ({"a":np.array([3, 1]), "b":np.array([1, 2, 4])}, ["a"],
+         [("state(a=3)", 21), ("state(a=1)", 7)], "a"),
+        ])
+def test_singlenode_reducer_fun(inputs_dict, expected_order, expected_output, reducer):
+    nn = Node(interface=fun3_interf, name="single_node_4", mapper=['a','b'],
+              inputs=inputs_dict, reducer=reducer, reducer_interface=fun4red_interf)
+    nn.run()
+    state = namedtuple("state", expected_order)
+
+    for (i, out) in enumerate(nn.result):
+        assert out[0] == eval(expected_output[i][0]) # checking state values
+        assert (out[1].out_red == expected_output[i][1]).all() # assuming that output value is an array (all() is used)
