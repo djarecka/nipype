@@ -156,39 +156,39 @@ def test_workflow_singlenode_3(inputs_dict, fun, mapper, expected_order, expecte
 
 # dj TODO: move to test_reduce?
 @pytest.mark.parametrize("inputs_dict, fun, mapper, reducer, expected_order, expected_output", [
-        ({"a": np.array([3, 4, 5]), "b": np.array([2, 2, 2])}, "fun3_interf",
-         ("a", "b"), "a", ["a", "b"],
+        ({"a": np.array([3, 4, 5]), "b": np.array([2, 2, 2])},
+         "fun3_interf", ("a", "b"), "a", ["a", "b"],
          [[("state(a=3, b=2)", 6)], [("state(a=4, b=2)", 8)], [("state(a=5, b=2)", 10)]]),
 
-        ({"a": np.array([3, 4, 5]), "b": np.array([2, 2, 2])}, "fun3_interf",
-         ("a", "b"), "b", ["a", "b"],
+        ({"a": np.array([3, 4, 5]), "b": np.array([2, 2, 2])},
+         "fun3_interf", ("a", "b"), "b", ["a", "b"],
          [[("state(a=3, b=2)", 6), ("state(a=4, b=2)", 8), ("state(a=5, b=2)", 10)]]),
 
-        ({"a": np.array([3, 4, 5]), "b": np.array([1, 2, 3])}, "fun3_interf",
-         ("a", "b"), "b", ["a", "b"],
+        ({"a": np.array([3, 4, 5]), "b": np.array([1, 2, 3])},
+         "fun3_interf", ("a", "b"), "b", ["a", "b"],
          [[("state(a=3, b=1)", 3)], [("state(a=4, b=2)", 8)], [("state(a=5, b=3)", 15)]]),
 
-        ({"a": np.array([3, 4, 5]), "b": np.array([2, 2, 2])}, "fun3_interf",
-         ["a", "b"], "a", ["a", "b"],
+        ({"a": np.array([3, 4, 5]), "b": np.array([2, 2, 2])},
+         "fun3_interf", ["a", "b"], "a", ["a", "b"],
         [[("state(a=3, b=2)", 6), ("state(a=3, b=2)", 6), ("state(a=3, b=2)", 6)],
          [("state(a=4, b=2)", 8), ("state(a=4, b=2)", 8), ("state(a=4, b=2)", 8)],
          [("state(a=5, b=2)", 10), ("state(a=5, b=2)", 10), ("state(a=5, b=2)", 10)]]),
 
-        ({"a": np.array([3, 4, 5]), "b": np.array([2, 2, 2])}, "fun3_interf",
-         ["a", "b"], "b", ["a", "b"],
+        ({"a": np.array([3, 4, 5]), "b": np.array([2, 2, 2])},
+         "fun3_interf", ["a", "b"], "b", ["a", "b"],
         [[("state(a=3, b=2)", 6), ("state(a=3, b=2)", 6), ("state(a=3, b=2)", 6),
          ("state(a=4, b=2)", 8), ("state(a=4, b=2)", 8), ("state(a=4, b=2)", 8),
          ("state(a=5, b=2)", 10), ("state(a=5, b=2)", 10), ("state(a=5, b=2)", 10)]]),
 
-        ({"a": np.array([3, 4, 5]), "b": np.array([1, 2, 3])}, "fun3_interf",
-         ["a", "b"], "b", ["a", "b"],
+        ({"a": np.array([3, 4, 5]), "b": np.array([1, 2, 3])},
+         "fun3_interf", ["a", "b"], "b", ["a", "b"],
         [[("state(a=3, b=1)", 3), ("state(a=4, b=1)", 4), ("state(a=5, b=1)", 5)],
          [("state(a=3, b=2)", 6), ("state(a=4, b=2)", 8), ("state(a=5, b=2)", 10)],
          [("state(a=3, b=3)", 9), ("state(a=4, b=3)", 12), ("state(a=5, b=3)", 15)]])
 
 ])
 def test_workflow_singlenode_reduce(inputs_dict, fun, mapper, reducer, expected_order, expected_output):
-    """testing workflow witha a single node, multiple inputs and a reducer"""
+    """testing workflow with a single node, multiple inputs and a reducer"""
     nn = Node(inputs=inputs_dict, mapper=mapper, reducer=reducer, interface=eval(fun),
               name="single_node_red")
     wf = Workflow(nodes=[nn], name="workflow_1")
@@ -206,6 +206,7 @@ def test_workflow_singlenode_reduce(inputs_dict, fun, mapper, reducer, expected_
         ({"a": np.array([3, 4, 5])}, "fun1_interf", "fun1a_interf", ["a"],
          [[("state(a=3)", 9),("state(a=4)", 16), ("state(a=5)", 25)],
           [("state(a=3)", 13),("state(a=4)", 14), ("state(a=5)", 15)]]),
+
          ({"a": np.array([3, 4, 5])}, "fun2_interf", "fun2a_interf", ["a"],
          [[("state(a=3)", [1, 3, 9, 27]), ("state(a=4)", [1, 4, 16, 64]), ("state(a=5)", [1, 5, 25, 125])],
           [("state(a=3)", [13, 13, 13, 13]), ("state(a=4)", [14, 14, 14, 14]), ("state(a=5)", [15, 15, 15, 15])]])
@@ -266,22 +267,25 @@ def test_workflow_connected_nodes_1(inputs_dict, fun1, fun2, expected_order, exp
 
 
 @pytest.mark.parametrize("inputs_dict, functions, mappers, expected_order, expected_output", [
-        ([{"a": np.array([3, 4, 5])}, {"b": np.array([1, 2, 3])}], ["fun1_interf", "fun3_interf"],
-         [["a"], ("a", "b")], [["a"], ["a", "b"]],
+        # scalar mapper in the second node
+        ([{"a": np.array([3, 4, 5])}, {"b": np.array([1, 2, 3])}],
+         ["fun1_interf", "fun3_interf"], [["a"], ("a", "b")], [["a"], ["a", "b"]],
          [[("state(a=3)", 9),("state(a=4)", 16), ("state(a=5)", 25)],
           [("state(a=3, b=1)", 9),("state(a=4, b=2)", 32), ("state(a=5, b=3)", 75)]]),
-        ([{"a": np.array([3, 4, 5])}, {"b": np.array([1, 2, 3])}], ["fun1_interf", "fun3_interf"],
-         [["a"], ["a", "b"]], [["a"], ["a", "b"]],
+        # outer mapper in the second node
+        ([{"a": np.array([3, 4, 5])}, {"b": np.array([1, 2, 3])}],
+         ["fun1_interf", "fun3_interf"], [["a"], ["a", "b"]], [["a"], ["a", "b"]],
          [[("state(a=3)", 9), ("state(a=4)", 16), ("state(a=5)", 25)],
-           [("state(a=3, b=1)", 9), ("state(a=3, b=2)", 18), ("state(a=3, b=3)", 27),
-            ("state(a=4, b=1)", 16), ("state(a=4, b=2)", 32), ("state(a=4, b=3)", 48),
-            ("state(a=5, b=1)", 25), ("state(a=5, b=2)", 50), ("state(a=5, b=3)", 75)]]),
-        ([{"a": np.array([3, 4, 5])}, {"b": np.array([1, 2, 3])}], ["fun1_interf", "fun3_interf"],
-         [["a"], ["a"]], [["a"], ["a", "b"]],
+          [("state(a=3, b=1)", 9), ("state(a=3, b=2)", 18), ("state(a=3, b=3)", 27),
+           ("state(a=4, b=1)", 16), ("state(a=4, b=2)", 32), ("state(a=4, b=3)", 48),
+           ("state(a=5, b=1)", 25), ("state(a=5, b=2)", 50), ("state(a=5, b=3)", 75)]]),
+        # simple mappers in both nodes
+        ([{"a": np.array([3, 4, 5])}, {"b": np.array([1, 2, 3])}],
+         ["fun1_interf", "fun3_interf"], [["a"], ["a"]], [["a"], ["a", "b"]],
          [[("state(a=3)", 9), ("state(a=4)", 16), ("state(a=5)", 25)],
-         [("state(a=3, b=np.array([1, 2, 3]))", np.array([9, 18, 27])),
-          ("state(a=4, b=np.array([1, 2, 3]))", np.array([16, 32, 48])),
-          ("state(a=5, b=np.array([1, 2, 3]))", np.array([25, 50, 75]))]])
+          [("state(a=3, b=np.array([1, 2, 3]))", np.array([9, 18, 27])),
+           ("state(a=4, b=np.array([1, 2, 3]))", np.array([16, 32, 48])),
+           ("state(a=5, b=np.array([1, 2, 3]))", np.array([25, 50, 75]))]])
 ])
 def test_workflow_connected_nodes_2(inputs_dict, functions, mappers, expected_order, expected_output):
     """testing workflow with two nodes and a mapper"""
@@ -305,20 +309,20 @@ def test_workflow_connected_nodes_2(inputs_dict, functions, mappers, expected_or
 
 @pytest.mark.parametrize("inputs_dict, functions, mappers, reducers, expected_order, expected_output", [
         # scalar mapper, reducer in the second node
-        ([{"a": np.array([3, 4, 5])}, {"b": np.array([1, 2, 3])}], ["fun1_interf", "fun3_interf"],
-         [["a"], ("a", "b")], [None, "a"], [["a"], ["a", "b"]],
+        ([{"a": np.array([3, 4, 5])}, {"b": np.array([1, 2, 3])}],
+         ["fun1_interf", "fun3_interf"], [["a"], ("a", "b")], [None, "a"], [["a"], ["a", "b"]],
          [[("state(a=3)", 9),("state(a=4)", 16), ("state(a=5)", 25)],
           [[("state(a=3, b=1)", 9)], [("state(a=4, b=2)", 32)], [("state(a=5, b=3)", 75)]]]),
         # outer mapper, reducer=a in the second node
-        ([{"a": np.array([3, 4, 5])}, {"b": np.array([1, 2, 3])}], ["fun1_interf", "fun3_interf"],
-         [["a"], ["a", "b"]], [None, "a"], [["a"], ["a", "b"]],
+        ([{"a": np.array([3, 4, 5])}, {"b": np.array([1, 2, 3])}],
+         ["fun1_interf", "fun3_interf"], [["a"], ["a", "b"]], [None, "a"], [["a"], ["a", "b"]],
          [[("state(a=3)", 9), ("state(a=4)", 16), ("state(a=5)", 25)],
            [[("state(a=3, b=1)", 9), ("state(a=3, b=2)", 18), ("state(a=3, b=3)", 27)],
             [("state(a=4, b=1)", 16), ("state(a=4, b=2)", 32), ("state(a=4, b=3)", 48)],
             [("state(a=5, b=1)", 25), ("state(a=5, b=2)", 50), ("state(a=5, b=3)", 75)]]]),
         # outer mapper, reducer=b in the second node
-        ([{"a": np.array([3, 4, 5])}, {"b": np.array([1, 2, 3])}], ["fun1_interf", "fun3_interf"],
-         [["a"], ["a", "b"]], [None, "b"], [["a"], ["a", "b"]],
+        ([{"a": np.array([3, 4, 5])}, {"b": np.array([1, 2, 3])}],
+         ["fun1_interf", "fun3_interf"], [["a"], ["a", "b"]], [None, "b"], [["a"], ["a", "b"]],
          [[("state(a=3)", 9), ("state(a=4)", 16), ("state(a=5)", 25)],
            [[("state(a=3, b=1)", 9), ("state(a=4, b=1)", 16), ("state(a=5, b=1)", 25)],
             [("state(a=3, b=2)", 18), ("state(a=4, b=2)", 32), ("state(a=5, b=2)", 50)],
@@ -358,8 +362,8 @@ def test_workflow_connected_nodes_reducer_1(inputs_dict, functions, mappers, red
 
 @pytest.mark.parametrize("inputs_dict, functions, mappers, reducers, expected_order, expected_output", [
         # scalar mapper, reducer in the second node with reducing fun
-        ([{"a": np.array([3, 4, 5])}, {"b": np.array([1, 2, 3])}], ["fun1_interf", "fun3_interf"],
-         [["a"], ["a", "b"]], [None, "a"], [["a"], ["a"]],
+        ([{"a": np.array([3, 4, 5])}, {"b": np.array([1, 2, 3])}],
+         ["fun1_interf", "fun3_interf"], [["a"], ["a", "b"]], [None, "a"], [["a"], ["a"]],
          [[("state(a=3)", 9), ("state(a=4)", 16), ("state(a=5)", 25)],
            [("state(a=3)", 54), ("state(a=4)", 96), ("state(a=5)", 150)]]),
 ])
@@ -390,9 +394,8 @@ def test_workflow_connected_nodes_reducer_1a(inputs_dict, functions, mappers, re
 
 
 @pytest.mark.parametrize("inputs_dict, functions, mappers, reducers, expected_order, expected_output", [
-        # dj: nie wiem jak zrobic, aby po reduce traktowal to jako jeden el.
-         ([{"a": np.array([3, 4, 5])}, {"b": np.array([1, 2, 3])}], ["fun1_interf", "fun3_interf"],
-          [["a"], ("a", "b")], ["a", None], [["a"], ["a", "b"]],
+         ([{"a": np.array([3, 4, 5])}, {"b": np.array([1, 2, 3])}],
+          ["fun1_interf", "fun3_interf"], [["a"], ("a", "b")], ["a", None], [["a"], ["a", "b"]],
          [[("state(a=3)", 9), ("state(a=4)", 16), ("state(a=5)", 25)],
           [("state(a=3, b=1)", 9), ("state(a=4, b=2)", 32), ("state(a=5, b=3)", 75)]]),
 

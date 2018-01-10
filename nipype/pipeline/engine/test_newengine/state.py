@@ -11,18 +11,18 @@ class State(object):
         self.state_inputs = state_inputs
 
         self._mapper = mapper
-        # TODO: what if mapper=None, more things should be in IF
         if self._mapper:
             # changing mapper (as in rpn), so I can read from left to right
             # e.g. if mapper=('d', ['e', 'r']), _mapper_rpn=['d', 'e', 'r', '*', '.']
             self._mapper_rpn = aux.mapper2rpn(self._mapper)
-
+        else:
+            self._mapper_rpn = None
         self._input_names_mapper = [i for i in self._mapper_rpn if i not in ["*", "."]]
+        # not all input field have to be use in the mapper, can be an extra scalar
         self._input_names = self.state_inputs.keys()
         # will use alphabetic order
         self._state_tuple = namedtuple("state_tuple", sorted(self._input_names))
 
-        #pdb.set_trace()
         # dictionary[key=input names] = list of axes related to
         # e.g. {'r': [1], 'e': [0], 'd': [0, 1]}
         # ndim - int, number of dimension for the "final array" (that is not created)
@@ -73,18 +73,6 @@ class State(object):
     @property
     def shape(self):
         return self._shape
-
-
-    # it should be probably move to auxiliary 
-    def _converting_axis2input(self):
-        for i in range(self._ndim):
-            self._input_for_axis.append([])
-            self._shape.append(0)
-
-        for inp, axis in self._axis_for_input.items():
-            for (i, ax) in enumerate(axis):
-                self._input_for_axis[ax].append(inp)
-                self._shape[ax] =  self.state_inputs[inp].shape[i]
 
 
     def state_values(self, ind):

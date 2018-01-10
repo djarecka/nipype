@@ -37,7 +37,8 @@ fun3_interf = Function(input_names=["a", "b"],
 
 
 @pytest.mark.parametrize("inputs_dict, expected_order, expected_output", [
-        ({"a": np.array([3, 4, 5])}, ["a"], [("state(a=3)", 9),("state(a=4)", 16), ("state(a=5)", 25)]),
+        ({"a": np.array([3, 4, 5])}, ["a"],
+         [("state(a=3)", 9),("state(a=4)", 16), ("state(a=5)", 25)]),
         # do we want to allow 2D inputs a, when mapper="a"?
         ({"a": np.array([[3, 4], [5, 6]])}, ["a"],
          [("state(a=3)", 9),("state(a=4)", 16), ("state(a=5)", 25), ("state(a=6)", 36)])
@@ -55,7 +56,8 @@ def test_singlenode_1(inputs_dict, expected_order, expected_output):
 
 
 @pytest.mark.parametrize("inputs_dict, expected_order, expected_output", [
-        ({"a": np.array([3, 4, 5])}, ["a"], [("state(a=3)", 9),("state(a=4)", 16), ("state(a=5)", 25)]),
+        ({"a": np.array([3, 4, 5])}, ["a"],
+         [("state(a=3)", 9),("state(a=4)", 16), ("state(a=5)", 25)]),
         # do we want to allow 2D inputs a, when mapper="a"?
         ({"a": np.array([[3, 4], [5, 6]])}, ["a"],
          [("state(a=3)", 9),("state(a=4)", 16), ("state(a=5)", 25), ("state(a=6)", 36)])
@@ -95,8 +97,7 @@ def test_singlenode_2(inputs_dict, expected_order, expected_output):
         # result[0] is for a[0]=3 and b[0]=0, etc.
         ({"a":np.array([3, 1, 8]), "b":np.array([0, 1, 2])}, ["a", "b"],
          [("state(a=3, b=0)", 0), ("state(a=1, b=1)", 1), ("state(a=8, b=2)", 16)]),
-        #({"a":np.array([3, 1, 8]), "b":np.array([2])}, ["a", "b"], #dj: should this be allowed?
-        # [("state(a=3, b=2)", 6), ("state(a=1, b=2)", 2), ("state(a=8, b=2)", 16)]),
+        # allow 2d inputs, but flattening expected_output
         ({"a":np.array([[3, 1], [6, 8]]), "b":np.array([[0, 1], [2, 3]])}, ["a", "b"],
          [("state(a=3, b=0)", 0), ("state(a=1, b=1)", 1), ("state(a=6, b=2)", 12), 
           ("state(a=8, b=3)", 24)])
@@ -110,7 +111,7 @@ def test_single_node_3(inputs_dict, expected_order, expected_output):
 
     for (i, out) in enumerate(nn.result):
         assert out[0] == eval(expected_output[i][0]) 
-        assert out[1].out == expected_output[i][1] #dj: do i need ".all()"?
+        assert out[1].out == expected_output[i][1]
 
 #TODO !!! should I keep the 2d array structure?? - see atest_single_node.py
 #TODO: what should be the order of results
@@ -125,7 +126,8 @@ def test_single_node_3(inputs_dict, expected_order, expected_output):
           ("state(a=1, b=1)", 1), ("state(a=1, b=2)", 2), ("state(a=1, b=4)", 4),
           ("state(a=30, b=1)", 30), ("state(a=30, b=2)", 60), ("state(a=30, b=4)", 120),
           ("state(a=10, b=1)", 10), ("state(a=10, b=2)", 20), ("state(a=10, b=4)", 40)]),
-        ({"a":np.array([3, 1]), "b":np.array([2])}, ["a", "b"], 
+
+        ({"a":np.array([3, 1]), "b":np.array([2])}, ["a", "b"],
          [("state(a=3, b=2)", 6), ("state(a=1, b=2)", 2)]),
         ])
 def test_single_node_4(inputs_dict, expected_order, expected_output):
@@ -141,12 +143,15 @@ def test_single_node_4(inputs_dict, expected_order, expected_output):
 
 
 @pytest.mark.parametrize("inputs_dict, expected_order, expected_output", [
-        # mapper contains a only, b is provided as one element
+        # mapper contains a only, b is provided as one element as an array
         ({"a":np.array([3, 1, 8]), "b":np.array([2])}, ["a", "b"],
-         [("state(a=3, b=np.array([2]))", np.array([6])), ("state(a=1, b=np.array([2]))", np.array([2])),
+         [("state(a=3, b=np.array([2]))", np.array([6])),
+          ("state(a=1, b=np.array([2]))", np.array([2])),
           ("state(a=8, b=np.array([2]))", np.array([16]))]),
+        # mapper contains a only, b is provided as one element as a number
         ({"a": np.array([3, 1, 8]), "b": 2}, ["a", "b"],
          [("state(a=3, b=2)", 6), ("state(a=1, b=2)", 2), ("state(a=8, b=2)", 16)]),
+        # mapper contains a only, b is an array
         ({"a": np.array([3, 1, 8]), "b": np.array([1, 2])}, ["a", "b"],
          [("state(a=3, b=np.array([1, 2]))", np.array([3, 6])),
           ("state(a=1, b=np.array([1, 2]))", np.array([1, 2])),
@@ -163,6 +168,7 @@ def test_single_node_5(inputs_dict, expected_order, expected_output):
     for (i, out) in enumerate(nn.result):
         assert out[0].a == eval(expected_output[i][0]).a
         try:
+            # b field can be an array
             assert (out[0].b == eval(expected_output[i][0]).b).all()
         except:
             assert out[0].b == eval(expected_output[i][0]).b

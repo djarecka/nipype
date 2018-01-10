@@ -49,7 +49,14 @@ class Node(object):
         ----------
         interface : Interface (mandatory)
             node specific interface
-
+        inputs: dictionary
+            inputs fields
+        mapper: string, tuple (for scalar) or list (for outer product)
+            mapper used with the interface
+        reducer: string
+            field used to group results
+        reducer_interface: Interface
+            interface used to reduce results
         name : string (mandatory)
             Name of this node. Name must be alphanumeric and not contain any
             special characters (e.g., '.', '@').
@@ -59,13 +66,13 @@ class Node(object):
 
         """
         self._mapper = mapper
-        # dj TODO: check when it should be moved to self._state_*
+        # contains variables from the state (original) variables
         self._state_mapper = self._mapper
         self._reducer = reducer
         self._reducer_interface = reducer_interface
         if inputs:
             self._inputs = inputs
-            # dj: i would need extra dictionaries for state in workflow
+            # extra input dictionary needed to save values of state inputs
             self._state_inputs = self._inputs.copy()
         else:
             self._inputs = {}
@@ -73,7 +80,7 @@ class Node(object):
 
         self._interface = interface
         self.base_dir = base_dir
-        # dj TODO: do i need it?
+        # dj TODO
         self.config = None
         self._verify_name(name)
         self.name = name
@@ -85,7 +92,6 @@ class Node(object):
 
     @property
     def result(self):
-        # dj TODO: think if we want to have self._result
         if self._result:
             return self._result
         else:
@@ -108,7 +114,6 @@ class Node(object):
         # self._interface.inputs.update(inputs)
         print("IN SETTER")
         self._inputs = inputs
-        # dj: i would need extra dictionaries for state in workflow
         self._state_inputs = self._inputs.copy()
 
 
@@ -157,15 +162,19 @@ class Node(object):
         clone._hierarchy = None
         return clone
 
+
     def _check_outputs(self, parameter):
         return hasattr(self.outputs, parameter)
 
-    # dj TODO: don't understand
+
+    # dj TODO: don't use it
     def _check_inputs(self, parameter):
         if isinstance(self.inputs, DynamicTraitedSpec):
             return True
         return hasattr(self.inputs, parameter)
 
+
+    # dj TODO: don't use it
     def _verify_name(self, name):
         valid_name = bool(re.match('^[\w-]+$', name))
         if not valid_name:
@@ -178,11 +187,13 @@ class Node(object):
         else:
             return '{}'.format(self._id)
 
+    # dj TODO: don't use it
     def save(self, filename=None):
         if filename is None:
             filename = 'temp.pklz'
         savepkl(filename, self)
 
+    # dj TODO: don't use it
     def load(self, filename):
         return loadpkl(filename)
 
@@ -190,16 +201,15 @@ class Node(object):
     def run_interface(self):
         """ running interface for each element generated from node state.
             checks self._reducer and reduce the final result.
-            returns a list with results (TODO: should yield?)
+            returns a list with results (TODO: should yield)
         """
         results_list = []
         if self._reducer:
-            red_val_l = []
-        if self._reducer:
+            # to save values for the reducer
+            reducer_val_l = []
             if self._reducer in self.node_states._input_names:
                 reducer_value_dict = {}
             else:
-                # dj: self._reducer can be at the end also an output (?)
                 raise Exception("reducer is not a valid input name")
 
         # this should yield at the end, not append to the list
@@ -215,19 +225,22 @@ class Node(object):
                 else:
                     reducer_value_dict[val] = len(results_list)
                     results_list.append(("{} = {}".format(self._reducer, val), [(state_dict, output)]))
-                    red_val_l.append(val)
+                    reducer_val_l.append(val)
             else:
                 # TODO: it will be later interface.run or something similar
                 results_list.append((state_dict, output))
 
+        # TODO: this probably should be in another method, after I moved to use generators
+        # if self._reducer_interface I have to run an extra interface for every reducer value
         if self._reducer_interface:
             results_list_red = []
             # TODO assuming for now that is only one field in the reducer
             for ii, (st_el, res_el) in enumerate(results_list):
                 values_l = [i[1].out for i in res_el]
+                # TODO: should work for other arguments names
                 res_red = self._reducer_interface.run(out=values_l) #assuming one val for now
                 state_tuple_red = namedtuple("state_tuple", sorted(self._reducer))
-                results_list_red.append((state_tuple_red(red_val_l[ii]), res_red.outputs))
+                results_list_red.append((state_tuple_red(reducer_val_l[ii]), res_red.outputs))
             return results_list_red
 
         return results_list
@@ -235,9 +248,9 @@ class Node(object):
 
 
     def run(self):
-        # dj: contains value of inputs
+        # contains value of inputs
         self.node_states_inputs = state.State(state_inputs=self._inputs, mapper=self._mapper)
-        # dj: contains value of state inputs
+        # contains value of state inputs (values provided in original input)
         self.node_states = state.State(state_inputs=self._state_inputs, mapper=self._state_mapper)
         self._result = self.run_interface()
 
@@ -261,6 +274,7 @@ class Workflow(object):
 
 
     def add_nodes(self, nodes):
+        """adding nodes without defining connections"""
         self._nodes += nodes
         self.graph.add_nodes_from(nodes)
         for nn in nodes:
@@ -274,7 +288,7 @@ class Workflow(object):
         self.connected_var[to_node][to_socket] = (from_node, from_socket)
 
 
-    def run(self, monitor_consumption=True):
+    def run(self, monitor_consumption=True): #dj TODO: monitor consumption not used
         self.graph_sorted = list(nx.topological_sort(self.graph))
         for nn in self.graph_sorted:
             try:
@@ -289,6 +303,7 @@ class Workflow(object):
                     elif type(nn._state_mapper) is list:
                         nn._state_mapper = [node_nm._state_mapper if ii == inp else ii for ii in nn._state_mapper]
             except(KeyError):
+                # tmp: we don't care about nn that are not in self.connected_var
                 pass
 
             nn.run()

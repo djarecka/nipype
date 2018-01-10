@@ -62,8 +62,7 @@ def test_mapping_axis(mapper, mapper_rpn, input, axis_for_inp, inp_for_axis, ndi
     assert st.ndim == ndim
 
     for i, inp in enumerate(inp_for_axis):
-        assert sorted(st.input_for_axis[i]) == sorted(inp) 
-    #pdb.set_trace()
+        assert sorted(st.input_for_axis[i]) == sorted(inp)
 
 
 @pytest.mark.parametrize("mapper, input, expected_order, expected_state_values",[

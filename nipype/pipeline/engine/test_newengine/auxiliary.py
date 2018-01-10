@@ -115,6 +115,6 @@ def converting_axis2input(state_inputs, axis_for_input, ndim):
     for inp, axis in axis_for_input.items():
         for (i, ax) in enumerate(axis):
             input_for_axis[ax].append(inp)
-            shape[ax] =  state_inputs[inp].shape[i]
+            shape[ax] = state_inputs[inp].shape[i]
             
     return input_for_axis, shape
