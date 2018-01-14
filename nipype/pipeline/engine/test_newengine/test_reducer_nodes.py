@@ -45,6 +45,31 @@ fun4red_interf = Function(input_names=["out"],
                        function=fun4red)
 
 
+
+@pytest.mark.parametrize("inputs_dict, expected_order, expected_output", [
+        # nothing really do reduce, one element for one value
+        ({"a": np.array([3, 4, 5])}, ["a"],
+         [[("state(a=3)", 9), ("state(a=4)", 16), ("state(a=5)", 25)]]),
+        #do we want to allow 2D inputs a, when mapper="a"?
+        #({"a": np.array([[3, 4], [5, 6]])}, ["a"],
+        # [[("state(a=3)", 9)],[("state(a=4)", 16)], [("state(a=5)", 25)], [("state(a=6)", 36)]], "a"),
+        #({"a": np.array([3, 4, 3])}, ["a"], [[("state(a=3)", 9), ("state(a=3)", 9)],[("state(a=4)", 16)]], "a"),
+        ])
+def test_singlenode_reducer_0(inputs_dict, expected_order, expected_output):
+    """testing nodes with reducer"""
+    nn  = Node(inputs=inputs_dict, mapper="a", interface=fun1_interf,
+               name="single_node_1", reducer="all")
+    nn.run()
+    state = namedtuple("state", expected_order)
+    #pdb.set_trace()
+    for (ii, out_red) in enumerate(nn.result):
+
+        for (jj, out) in enumerate(out_red[1]):
+            assert out[0] == eval(expected_output[ii][jj][0]) # checking state values
+            assert (out[1].out == expected_output[ii][jj][1]).all() # assuming that output value is an array (all() is used)
+
+
+
 @pytest.mark.parametrize("inputs_dict, expected_order, expected_output, reducer", [
         # nothing really do reduce, one element for one value
         ({"a": np.array([3, 4, 5])}, ["a"],
@@ -61,7 +86,7 @@ def test_singlenode_reducer_1(inputs_dict, expected_order, expected_output, redu
     nn.run()
     state = namedtuple("state", expected_order)
     for (ii, out_red) in enumerate(nn.result):
-
+        #pdb.set_trace()
         for (jj, out) in enumerate(out_red[1]):
             assert out[0] == eval(expected_output[ii][jj][0]) # checking state values
             assert (out[1].out == expected_output[ii][jj][1]).all() # assuming that output value is an array (all() is used)
@@ -86,11 +111,27 @@ def test_singlenode_reducer_2(inputs_dict, expected_order, expected_output, redu
             assert (out[1].out == expected_output[ii][jj][1]).all()
 
 
+
+@pytest.mark.parametrize("inputs_dict, expected_output", [
+        ({"a":np.array([3, 1]), "b":np.array([1, 2, 4])},
+         [("all", 28)]),
+        ])
+def test_singlenode_reducer_fun_0(inputs_dict, expected_output):
+    """testing nodes with reducers=all and reducer interfaces"""
+    nn = Node(interface=fun3_interf, name="single_node_4", mapper=['a','b'],
+              inputs=inputs_dict, reducer="all", reducer_interface=fun4red_interf)
+    nn.run()
+
+    for (i, out) in enumerate(nn.result):
+        assert out[0] == "all"
+        assert (out[1].out_red == expected_output[i][1]).all()
+
+
 @pytest.mark.parametrize("inputs_dict, expected_order, expected_output", [
         ({"a":np.array([3, 1]), "b":np.array([1, 2, 4])}, ["a"],
          [("state(a=3)", 21), ("state(a=1)", 7)]),
         ])
-def test_singlenode_reducer_fun(inputs_dict, expected_order, expected_output):
+def test_singlenode_reducer_fun_1(inputs_dict, expected_order, expected_output):
     """testing nodes with reducers and reducer interfaces"""
     nn = Node(interface=fun3_interf, name="single_node_4", mapper=['a','b'],
               inputs=inputs_dict, reducer="a", reducer_interface=fun4red_interf)

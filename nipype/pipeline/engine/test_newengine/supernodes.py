@@ -112,7 +112,7 @@ class Node(object):
         # Basic idea, though I haven't looked up the actual way to do this:
         # self._interface.inputs.clear()
         # self._interface.inputs.update(inputs)
-        print("IN SETTER")
+        #print("IN SETTER")
         self._inputs = inputs
         self._state_inputs = self._inputs.copy()
 
@@ -209,6 +209,8 @@ class Node(object):
             reducer_val_l = []
             if self._reducer in self.node_states._input_names:
                 reducer_value_dict = {}
+            elif self._reducer == "all":
+                results_list.append(("all", []))
             else:
                 raise Exception("reducer is not a valid input name")
 
@@ -218,7 +220,7 @@ class Node(object):
             state_dict = self.node_states.state_values(ind)
             res = self._interface.run(**inputs_dict._asdict())
             output = res.outputs
-            if self._reducer:
+            if self._reducer and self._reducer != "all":
                 val = state_dict.__getattribute__(self._reducer)
                 if val in reducer_value_dict.keys():
                     results_list[reducer_value_dict[val]][1].append((state_dict, output))
@@ -226,6 +228,8 @@ class Node(object):
                     reducer_value_dict[val] = len(results_list)
                     results_list.append(("{} = {}".format(self._reducer, val), [(state_dict, output)]))
                     reducer_val_l.append(val)
+            elif self._reducer == "all":
+                results_list[0][1].append((state_dict, output))
             else:
                 # TODO: it will be later interface.run or something similar
                 results_list.append((state_dict, output))
@@ -239,8 +243,12 @@ class Node(object):
                 values_l = [i[1].out for i in res_el]
                 # TODO: should work for other arguments names
                 res_red = self._reducer_interface.run(out=values_l) #assuming one val for now
-                state_tuple_red = namedtuple("state_tuple", sorted(self._reducer))
-                results_list_red.append((state_tuple_red(reducer_val_l[ii]), res_red.outputs))
+                if self._reducer == "all":
+                    #state_tuple_red = namedtuple("state_tuple", ["all"])
+                    results_list_red.append(("all",res_red.outputs))
+                else:
+                    state_tuple_red = namedtuple("state_tuple", sorted(self._reducer))
+                    results_list_red.append((state_tuple_red(reducer_val_l[ii]), res_red.outputs))
             return results_list_red
 
         return results_list

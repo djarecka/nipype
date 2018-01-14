@@ -27,7 +27,7 @@ def mapper2rpn(mapper):
     
     ordering(mapper, i=0)
     
-    print("mapper", output_mapper)
+    #print("mapper", output_mapper)
     return output_mapper
 
 
@@ -100,7 +100,7 @@ def mapping_axis(state_inputs, mapper_rpn):
         current_axis = [i for i in range(state_inputs[stack[0]].ndim)]
         axis_for_input[stack[0]] = current_axis
 
-    print("axis", axis_for_input)
+    #print("axis", axis_for_input)
     return axis_for_input, max(current_axis) + 1
 
 
