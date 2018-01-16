@@ -18,10 +18,10 @@ fun1_interf = Function(input_names=["a"],
                         function=fun1)
 
 
-def fun1a(a):
-    return a + 10
+def fun1a(b):
+    return b + 10
 
-fun1a_interf = Function(input_names=["a"],
+fun1a_interf = Function(input_names=["b"],
                         output_names=["out"],
                         function=fun1a)
 
@@ -36,29 +36,29 @@ fun2_interf = Function(input_names=["a"],
                         function=fun2)
 
 
-def fun2a(a):
+def fun2a(b):
     import numpy as np
-    return a + np.array(4*[10])
+    return b + np.array(4*[10])
 
-fun2a_interf = Function(input_names=["a"],
+fun2a_interf = Function(input_names=["b"],
                         output_names=["out"],
                         function=fun2a)
 
 
 
-def fun3(a, b):
-    return a * b
+def fun3(c, b):
+    return c * b
 
-fun3_interf = Function(input_names=["a", "b"],
+fun3_interf = Function(input_names=["c", "b"],
                         output_names=["out"],
                         function=fun3)
 
 
-def fun4(a):
+def fun4(b):
     import numpy as np
-    return np.array(a).sum()
+    return np.array(b).sum()
 
-fun4_interf = Function(input_names=["a"],
+fun4_interf = Function(input_names=["b"],
                        output_names=["out"],
                        function=fun4)
 
@@ -131,14 +131,14 @@ def test_workflow_singlenode_2(inputs_dict, fun, expected_order, expected_output
 
 
 @pytest.mark.parametrize("inputs_dict, fun, mapper, expected_order, expected_output", [
-        ({"a": np.array([3, 4, 5]), "b": np.array([2, 2, 2])}, "fun3_interf",
-         ("a", "b"), ["a", "b"],
-         [("state(a=3, b=2)", 6),("state(a=4, b=2)", 8), ("state(a=5, b=2)", 10)]),
-        ({"a": np.array([3, 4, 5]), "b": np.array([2, 2, 2])}, "fun3_interf",
-         ["a", "b"], ["a", "b"],
-        [("state(a=3, b=2)", 6), ("state(a=3, b=2)", 6), ("state(a=3, b=2)", 6),
-         ("state(a=4, b=2)", 8), ("state(a=4, b=2)", 8), ("state(a=4, b=2)", 8),
-         ("state(a=5, b=2)", 10), ("state(a=5, b=2)", 10), ("state(a=5, b=2)", 10)])
+        ({"c": np.array([3, 4, 5]), "b": np.array([2, 2, 2])}, "fun3_interf",
+         ("c", "b"), ["b", "c"],
+         [("state(b=2, c=3)", 6),("state(b=2, c=4)", 8), ("state(b=2, c=5)", 10)]),
+        ({"c": np.array([3, 4, 5]), "b": np.array([2, 2, 2])}, "fun3_interf",
+         ["c", "b"], ["b", "c"],
+        [("state(b=2, c=3)", 6), ("state(b=2, c=3)", 6), ("state(b=2, c=3)", 6),
+         ("state(b=2, c=4)", 8), ("state(b=2, c=4)", 8), ("state(b=2, c=4)", 8),
+         ("state(b=2, c=5)", 10), ("state(b=2, c=5)", 10),("state(b=2, c=5)", 10)])
 ])
 def test_workflow_singlenode_3(inputs_dict, fun, mapper, expected_order, expected_output):
     """testing workflow witha a single node, multiple inputs"""
@@ -156,23 +156,23 @@ def test_workflow_singlenode_3(inputs_dict, fun, mapper, expected_order, expecte
 
 # dj TODO: move to test_reduce?
 @pytest.mark.parametrize("inputs_dict, fun, mapper, reducer, expected_order, expected_output", [
-        ({"a": np.array([3, 4, 5]), "b": np.array([2, 2, 2])},
-         "fun3_interf", ("a", "b"), "a", ["a", "b"],
-         [[("state(a=3, b=2)", 6)], [("state(a=4, b=2)", 8)], [("state(a=5, b=2)", 10)]]),
+        ({"c": np.array([3, 4, 5]), "b": np.array([2, 2, 2])},
+         "fun3_interf", ("c", "b"), "c", ["b", "c"],
+         [[("state(b=2, c=3)", 6)], [("state(b=2, c=4)", 8)], [("state(b=2, c=5)", 10)]]),
 
-        ({"a": np.array([3, 4, 5]), "b": np.array([2, 2, 2])},
-         "fun3_interf", ("a", "b"), "b", ["a", "b"],
-         [[("state(a=3, b=2)", 6), ("state(a=4, b=2)", 8), ("state(a=5, b=2)", 10)]]),
+        ({"c": np.array([3, 4, 5]), "b": np.array([2, 2, 2])},
+         "fun3_interf", ("c", "b"), "b", ["b", "c"],
+         [[("state(b=2, c=3)", 6), ("state(b=2, c=4)", 8), ("state(b=2, c=5)", 10)]]),
 
-        ({"a": np.array([3, 4, 5]), "b": np.array([1, 2, 3])},
-         "fun3_interf", ("a", "b"), "b", ["a", "b"],
-         [[("state(a=3, b=1)", 3)], [("state(a=4, b=2)", 8)], [("state(a=5, b=3)", 15)]]),
+        ({"c": np.array([3, 4, 5]), "b": np.array([1, 2, 3])},
+         "fun3_interf", ("c", "b"), "b", ["b", "c"],
+         [[("state(b=2, c=3)", 3)], [("state(b=2, c=4)", 8)], [("state(b=2, c=5)", 15)]]),
 
-        ({"a": np.array([3, 4, 5]), "b": np.array([2, 2, 2])},
-         "fun3_interf", ["a", "b"], "a", ["a", "b"],
-        [[("state(a=3, b=2)", 6), ("state(a=3, b=2)", 6), ("state(a=3, b=2)", 6)],
-         [("state(a=4, b=2)", 8), ("state(a=4, b=2)", 8), ("state(a=4, b=2)", 8)],
-         [("state(a=5, b=2)", 10), ("state(a=5, b=2)", 10), ("state(a=5, b=2)", 10)]]),
+        ({"c": np.array([3, 4, 5]), "b": np.array([2, 2, 2])},
+         "fun3_interf", ["c", "b"], "c", ["b", "c"],
+        [[("state(b=2, c=3)", 6), ("state(b=2, c=3)", 6), ("state(b=2, c=3)", 6)],
+         [("state(b=2, c=4)", 8), ("state(b=2, c=4)", 8), ("state(b=2, c=4)", 8)],
+         [("state(b=2, c=5)", 10), ("state(b=2, c=5)", 10), ("state(b=2, c=4)", 8)]]),
 
         ({"a": np.array([3, 4, 5]), "b": np.array([2, 2, 2])},
          "fun3_interf", ["a", "b"], "b", ["a", "b"],
@@ -203,19 +203,19 @@ def test_workflow_singlenode_reduce(inputs_dict, fun, mapper, reducer, expected_
 
 
 @pytest.mark.parametrize("inputs_dict, fun1, fun2, expected_order, expected_output", [
-        ({"a": np.array([3, 4, 5])}, "fun1_interf", "fun1a_interf", ["a"],
+        (({"a": np.array([3, 4, 5])}, {"b": np.array([3, 4, 5])}), "fun1_interf", "fun1a_interf", ["a"],
          [[("state(a=3)", 9),("state(a=4)", 16), ("state(a=5)", 25)],
           [("state(a=3)", 13),("state(a=4)", 14), ("state(a=5)", 15)]]),
 
-         ({"a": np.array([3, 4, 5])}, "fun2_interf", "fun2a_interf", ["a"],
+         (({"a": np.array([3, 4, 5])}, {"b": np.array([3, 4, 5])}), "fun2_interf", "fun2a_interf", ["a"],
          [[("state(a=3)", [1, 3, 9, 27]), ("state(a=4)", [1, 4, 16, 64]), ("state(a=5)", [1, 5, 25, 125])],
           [("state(a=3)", [13, 13, 13, 13]), ("state(a=4)", [14, 14, 14, 14]), ("state(a=5)", [15, 15, 15, 15])]])
 ])
 def test_workflow_not_connected_nodes_1(inputs_dict, fun1, fun2, expected_order, expected_output):
     """testing workflow with two nodes that have no connections"""
-    nn1 = Node(inputs=inputs_dict, mapper="a", interface=eval(fun1),
+    nn1 = Node(inputs=inputs_dict[0], mapper="a", interface=eval(fun1),
               name="node_1")
-    nn2 = Node(inputs=inputs_dict, mapper="a", interface=eval(fun2),
+    nn2 = Node(inputs=inputs_dict[1], mapper="b", interface=eval(fun2),
               name="node_2")
     wf = Workflow(name="workflow_1a")
     wf.add_nodes([nn1, nn2])
@@ -248,14 +248,14 @@ def test_workflow_not_connected_nodes_1(inputs_dict, fun1, fun2, expected_order,
 
 ])
 def test_workflow_connected_nodes_1(inputs_dict, fun1, fun2, expected_order, expected_output):
-    """testing workflow with two nodes that have no connections"""
+    """testing workflow with two nodes that have connections"""
     nn1 = Node(inputs=inputs_dict, mapper="a", interface=eval(fun1),
               name="node_1")
-    nn2 = Node(mapper="a", interface=eval(fun2),
+    nn2 = Node(mapper="out", interface=eval(fun2),
               name="node_2")
     wf = Workflow(name="workflow_1a")
     wf.add_nodes([nn1, nn2])
-    wf.connect(nn1, "out", nn2, "a")
+    wf.connect(nn1, "out", nn2, "b")
     wf.run()
 
     state = namedtuple("state", expected_order)
@@ -269,19 +269,19 @@ def test_workflow_connected_nodes_1(inputs_dict, fun1, fun2, expected_order, exp
 @pytest.mark.parametrize("inputs_dict, functions, mappers, expected_order, expected_output", [
         # scalar mapper in the second node
         ([{"a": np.array([3, 4, 5])}, {"b": np.array([1, 2, 3])}],
-         ["fun1_interf", "fun3_interf"], [["a"], ("a", "b")], [["a"], ["a", "b"]],
+         ["fun1_interf", "fun3_interf"], [["a"], ("out", "b")], [["a"], ["a", "b"]],
          [[("state(a=3)", 9),("state(a=4)", 16), ("state(a=5)", 25)],
           [("state(a=3, b=1)", 9),("state(a=4, b=2)", 32), ("state(a=5, b=3)", 75)]]),
-        # outer mapper in the second node
+         # outer mapper in the second node
         ([{"a": np.array([3, 4, 5])}, {"b": np.array([1, 2, 3])}],
-         ["fun1_interf", "fun3_interf"], [["a"], ["a", "b"]], [["a"], ["a", "b"]],
+         ["fun1_interf", "fun3_interf"], [["a"], ["out", "b"]], [["a"], ["a", "b"]],
          [[("state(a=3)", 9), ("state(a=4)", 16), ("state(a=5)", 25)],
           [("state(a=3, b=1)", 9), ("state(a=3, b=2)", 18), ("state(a=3, b=3)", 27),
            ("state(a=4, b=1)", 16), ("state(a=4, b=2)", 32), ("state(a=4, b=3)", 48),
            ("state(a=5, b=1)", 25), ("state(a=5, b=2)", 50), ("state(a=5, b=3)", 75)]]),
         # simple mappers in both nodes
         ([{"a": np.array([3, 4, 5])}, {"b": np.array([1, 2, 3])}],
-         ["fun1_interf", "fun3_interf"], [["a"], ["a"]], [["a"], ["a", "b"]],
+         ["fun1_interf", "fun3_interf"], [["a"], "out"], [["a"], ["a", "b"]],
          [[("state(a=3)", 9), ("state(a=4)", 16), ("state(a=5)", 25)],
           [("state(a=3, b=np.array([1, 2, 3]))", np.array([9, 18, 27])),
            ("state(a=4, b=np.array([1, 2, 3]))", np.array([16, 32, 48])),
@@ -295,7 +295,7 @@ def test_workflow_connected_nodes_2(inputs_dict, functions, mappers, expected_or
               name="node_2")
     wf = Workflow(name="workflow_1a")
     wf.add_nodes([nn1, nn2])
-    wf.connect(nn1, "out", nn2, "a")
+    wf.connect(nn1, "out", nn2, "c")
     wf.run()
 
     for ni in range(2):
@@ -310,19 +310,19 @@ def test_workflow_connected_nodes_2(inputs_dict, functions, mappers, expected_or
 @pytest.mark.parametrize("inputs_dict, functions, mappers, reducers, expected_order, expected_output", [
         # scalar mapper, reducer in the second node
         ([{"a": np.array([3, 4, 5])}, {"b": np.array([1, 2, 3])}],
-         ["fun1_interf", "fun3_interf"], [["a"], ("a", "b")], [None, "a"], [["a"], ["a", "b"]],
+         ["fun1_interf", "fun3_interf"], [["a"], ("out", "b")], [None, "a"], [["a"], ["a", "b"]],
          [[("state(a=3)", 9),("state(a=4)", 16), ("state(a=5)", 25)],
           [[("state(a=3, b=1)", 9)], [("state(a=4, b=2)", 32)], [("state(a=5, b=3)", 75)]]]),
         # outer mapper, reducer=a in the second node
         ([{"a": np.array([3, 4, 5])}, {"b": np.array([1, 2, 3])}],
-         ["fun1_interf", "fun3_interf"], [["a"], ["a", "b"]], [None, "a"], [["a"], ["a", "b"]],
+         ["fun1_interf", "fun3_interf"], [["a"], ["out", "b"]], [None, "a"], [["a"], ["a", "b"]],
          [[("state(a=3)", 9), ("state(a=4)", 16), ("state(a=5)", 25)],
            [[("state(a=3, b=1)", 9), ("state(a=3, b=2)", 18), ("state(a=3, b=3)", 27)],
             [("state(a=4, b=1)", 16), ("state(a=4, b=2)", 32), ("state(a=4, b=3)", 48)],
             [("state(a=5, b=1)", 25), ("state(a=5, b=2)", 50), ("state(a=5, b=3)", 75)]]]),
         # outer mapper, reducer=b in the second node
         ([{"a": np.array([3, 4, 5])}, {"b": np.array([1, 2, 3])}],
-         ["fun1_interf", "fun3_interf"], [["a"], ["a", "b"]], [None, "b"], [["a"], ["a", "b"]],
+         ["fun1_interf", "fun3_interf"], [["a"], ["out", "b"]], [None, "b"], [["a"], ["a", "b"]],
          [[("state(a=3)", 9), ("state(a=4)", 16), ("state(a=5)", 25)],
            [[("state(a=3, b=1)", 9), ("state(a=4, b=1)", 16), ("state(a=5, b=1)", 25)],
             [("state(a=3, b=2)", 18), ("state(a=4, b=2)", 32), ("state(a=5, b=2)", 50)],
@@ -337,13 +337,12 @@ def test_workflow_connected_nodes_reducer_1(inputs_dict, functions, mappers, red
               name="node_2", reducer=reducers[1])
     wf = Workflow(name="workflow_1a")
     wf.add_nodes([nn1, nn2])
-    wf.connect(nn1, "out", nn2, "a")
+    wf.connect(nn1, "out", nn2, "c")
 
     wf.run()
 
     for ni in range(2):
         state = namedtuple("state", expected_order[ni])
-        #pdb.set_trace()
         if reducers[ni]:
             #pdb.set_trace()
             for (i, out_red) in enumerate(wf.nodes[ni].result):
@@ -363,7 +362,7 @@ def test_workflow_connected_nodes_reducer_1(inputs_dict, functions, mappers, red
 @pytest.mark.parametrize("inputs_dict, functions, mappers, reducers, expected_order, expected_output", [
         # scalar mapper, reducer in the second node with reducing fun
         ([{"a": np.array([3, 4, 5])}, {"b": np.array([1, 2, 3])}],
-         ["fun1_interf", "fun3_interf"], [["a"], ["a", "b"]], [None, "a"], [["a"], ["a"]],
+         ["fun1_interf", "fun3_interf"], [["a"], ["out", "b"]], [None, "a"], [["a"], ["a"]],
          [[("state(a=3)", 9), ("state(a=4)", 16), ("state(a=5)", 25)],
            [("state(a=3)", 54), ("state(a=4)", 96), ("state(a=5)", 150)]]),
 ])
@@ -376,7 +375,7 @@ def test_workflow_connected_nodes_reducer_1a(inputs_dict, functions, mappers, re
               name="node_2", reducer=reducers[1], reducer_interface=fun4red_interf)
     wf = Workflow(name="workflow_1a")
     wf.add_nodes([nn1, nn2])
-    wf.connect(nn1, "out", nn2, "a")
+    wf.connect(nn1, "out", nn2, "c")
 
     wf.run()
 
@@ -395,7 +394,7 @@ def test_workflow_connected_nodes_reducer_1a(inputs_dict, functions, mappers, re
 
 @pytest.mark.parametrize("inputs_dict, functions, mappers, reducers, expected_order, expected_output", [
          ([{"a": np.array([3, 4, 5])}, {"b": np.array([1, 2, 3])}],
-          ["fun1_interf", "fun3_interf"], [["a"], ("a", "b")], ["a", None], [["a"], ["a", "b"]],
+          ["fun1_interf", "fun3_interf"], [["a"], ("out_red", "b")], ["a", None], [["a"], ["a", "b"]],
          [[("state(a=3)", 9), ("state(a=4)", 16), ("state(a=5)", 25)],
           [("state(a=3, b=1)", 9), ("state(a=4, b=2)", 32), ("state(a=5, b=3)", 75)]]),
 
@@ -409,7 +408,7 @@ def test_workflow_connected_nodes_reducer_2(inputs_dict, functions, mappers, red
               name="node_2", reducer=reducers[1])
     wf = Workflow(name="workflow_1a")
     wf.add_nodes([nn1, nn2])
-    wf.connect(nn1, "out_red", nn2, "a")
+    wf.connect(nn1, "out_red", nn2, "c")
 
     wf.run()
 
@@ -422,3 +421,41 @@ def test_workflow_connected_nodes_reducer_2(inputs_dict, functions, mappers, red
             if ni == 1:
                 assert (out[0].b == eval(expected_output[ni][i][0]).b).all()
                 assert (out[1].out == expected_output[ni][i][1]).all()
+
+
+@pytest.mark.parametrize("inputs_dict, fun1, fun2, expected_order, expected_output", [
+
+         (({"a": np.array([3, 4])}, {"b": np.array([0, 2])}), "fun2_interf", "fun3_interf", (["a"], ["a", "b", "c_ind"]),
+         [[("state(a=3)", [1, 3, 9, 27]), ("state(a=4)", [1, 4, 16, 64])],
+          [("state(a=3, b=0, c_ind=0)", 0), ("state(a=3, b=2, c_ind=0)", 2),
+           ("state(a=3, b=0, c_ind=1)", 0), ("state(a=3, b=2, c_ind=1)", 6),
+           ("state(a=3, b=0, c_ind=2)", 0), ("state(a=3, b=2, c_ind=2)", 18),
+           ("state(a=3, b=0, c_ind=3)", 0), ("state(a=3, b=2, c_ind=3)", 54),
+           ("state(a=4, b=0, c_ind=0)", 0), ("state(a=4, b=2, c_ind=0)", 2),
+           ("state(a=4, b=0, c_ind=1)", 0), ("state(a=4, b=2, c_ind=1)", 8),
+           ("state(a=4, b=0, c_ind=2)", 0), ("state(a=4, b=2, c_ind=2)", 32),
+           ("state(a=4, b=0, c_ind=3)", 0), ("state(a=4, b=2, c_ind=3)", 128)]]),
+           
+
+#         ({"a": np.array([3, 4, 5])}, "fun2_interf", "fun4_interf", ["a"],
+#         [[("state(a=3)", [1, 3, 9, 27]), ("state(a=4)", [1, 4, 16, 64]), ("state(a=5)", [1, 5, 25, 125])],
+#          [("state(a=3)", 40), ("state(a=4)", 85), ("state(a=5)", 156)]])
+
+])
+def test_workflow_connected_nodes_3(inputs_dict, fun1, fun2, expected_order, expected_output):
+    """testing workflow with two nodes that have connections"""
+    nn1 = Node(inputs=inputs_dict[0], mapper="a", interface=eval(fun1),
+              name="node_1")
+    nn2 = Node(inputs=inputs_dict[1], interface=eval(fun2), mapper=[["out", "c"], "b"],
+              name="node_2")
+    wf = Workflow(name="workflow_1a")
+    wf.add_nodes([nn1, nn2])
+    wf.connect(nn1, "out", nn2, "c")
+    wf.run()
+
+    for ni in range(2):
+        state = namedtuple("state", expected_order[ni])
+        for (i, out) in enumerate(wf.nodes[ni].result):
+            assert out[0] == eval(expected_output[ni][i][0])
+            assert (out[1].out == expected_output[ni][i][1]).all()
+

@@ -257,7 +257,9 @@ class Node(object):
 
     def run(self):
         # contains value of inputs
+        #pdb.set_trace()
         self.node_states_inputs = state.State(state_inputs=self._inputs, mapper=self._mapper)
+        #pdb.set_trace()
         # contains value of state inputs (values provided in original input)
         self.node_states = state.State(state_inputs=self._state_inputs, mapper=self._state_mapper)
         self._result = self.run_interface()
@@ -304,12 +306,37 @@ class Workflow(object):
                     (node_nm, var_nm) = self.connected_var[nn][inp]
                     nn.inputs.update({inp: np.array([getattr(ii[1], var_nm) for ii in node_nm.result])})
                     nn._state_inputs.update(node_nm._state_inputs)
-                    if type(nn._state_mapper) is str:
-                        nn._state_mapper = nn._state_mapper.replace(inp, node_nm._state_mapper)
-                    elif type(nn._state_mapper) is tuple:
-                        nn._state_mapper = tuple([node_nm._state_mapper if ii==inp else ii for ii in nn._state_mapper])
-                    elif type(nn._state_mapper) is list:
-                        nn._state_mapper = [node_nm._state_mapper if ii == inp else ii for ii in nn._state_mapper]
+                    #pdb.set_trace()
+                    if not nn._state_mapper or nn._state_mapper == out[1]:
+                        #pdb.set_trace()
+                        nn._state_mapper = node_nm._state_mapper
+                        nn._mapper = inp
+                    elif out[1] in nn._state_mapper: #_state_mapper or _mapper?? TODO
+                        if type(nn._state_mapper) is tuple:
+                            #pdb.set_trace()
+                            nn._state_mapper = tuple([node_nm._state_mapper if ii==out[1] else ii for ii in nn._state_mapper])
+                            nn._mapper = tuple([inp if ii==out[1] else ii for ii in nn._mapper])
+                        elif type(nn._state_mapper) is list:
+                            nn._state_mapper = [node_nm._state_mapper if ii==out[1] else ii for ii in nn._state_mapper]
+                            nn._mapper = [inp if ii==out[1] else ii for ii in nn._mapper]
+                    #TODO!!!!
+                    elif [out[1], inp] in nn._state_mapper:
+                        if type(nn._state_mapper) is tuple:
+                            nn._state_mapper = tuple([[node_nm._state_mapper, inp+"_ind"] if ii==[out[1], inp] else ii for ii in nn._state_mapper])
+                            nn._mapper = tuple([inp if ii==[out[1], inp] else ii for ii in nn._mapper])
+                        if type(nn._state_mapper) is list:
+                            nn._state_mapper = [[node_nm._state_mapper, inp+"_ind"] if ii==[out[1], inp] else ii for ii in nn._state_mapper]
+                            nn._mapper = [inp if ii==[out[1], inp] else ii for ii in nn._mapper]
+                        nn._state_inputs.update({inp+"_ind": np.array(range(nn.inputs[inp].shape[-1]))})
+                        # not sure..
+                        #pdb.set_trace()
+                        #nn.inputs.update({inp: np.array([getattr(ii[1], var_nm) for ii in node_nm.result])})
+                        #nn._mapper = [node_nm._state_mapper, nn._mapper]
+                        #pdb.set_trace()
+                        pass
+                    elif inp in nn._state_mapper:
+                        raise Exception("{} can be in the mapper only together with {}, i.e. {})".format(inp, out[1], [out[1], inp])) 
+                    
             except(KeyError):
                 # tmp: we don't care about nn that are not in self.connected_var
                 pass
