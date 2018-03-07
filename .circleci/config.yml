@@ -44,20 +44,6 @@ _get_base_image: &get_base_image
       exit 1
     fi
 
-_build_main_image_py36: &build_main_image_py36
-  name: Build main image (py36)
-  no_output_timeout: 60m
-  command: |
-    e=1 && for i in {1..5}; do
-      docker build \
-        --rm=false \
-        --tag nipype/nipype:latest \
-        --tag nipype/nipype:py36 \
-        --build-arg BUILD_DATE="$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
-        --build-arg VCS_REF="$(git rev-parse --short HEAD)" \
-        --build-arg VERSION="${CIRCLE_TAG}" /home/circleci/nipype \
-      && e=0 && break || sleep 15
-    done && [ "$e" -eq "0" ]
 
 _build_main_image_py27: &build_main_image_py27
   name: Build main image (py27)
@@ -118,7 +104,7 @@ jobs:
       - run: *generate_dockerfiles
       - run: *modify_nipype_version
       - run: *get_base_image
-      - run: *build_main_image_py36
+      - run: *build_main_image_py27
 
 
 
