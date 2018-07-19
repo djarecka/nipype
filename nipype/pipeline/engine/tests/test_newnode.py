@@ -1,4 +1,4 @@
-from .. import NewNode
+from .. import NewNode, NewWorkflow
 from ..auxiliary import Function_Interface
 
 import sys

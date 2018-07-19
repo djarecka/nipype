@@ -1095,11 +1095,12 @@ class NewNodeBase(EngineBase):
 
         # adding interface: i'm using Function Interface from aux that has input_map that can change the name of arguments
         self._interface = interface
-        self._interface.input_map = dict((key, "{}-{}".format(self.name, value))
-                                         for (key, value) in self._interface.input_map.items())
+        if self._interface:
+            self._interface.input_map = dict((key, "{}-{}".format(self.name, value))
+                                             for (key, value) in self._interface.input_map.items())
 
+            self._out_nm = self._interface._output_nm
         self.needed_outputs = []
-        self._out_nm = self._interface._output_nm
         self._global_done = False
         self._result = {}
 
@@ -1244,16 +1245,16 @@ class NewNodeBase(EngineBase):
 
 
 
-
-class NewNode(object):
+# dj: not sure if it should use EngineBase
+class NewNode(EngineBase):
     """wrapper around NewNodeBase, mostly have run method """
     def __init__(self, name, interface, inputs=None, mapper=None, join_by=None,
                  base_dir=None, *args, **kwargs):
         self.node = NewNodeBase(name, interface, inputs, mapper, join_by,
                                 base_dir, *args, **kwargs)
-        # dj: might want to use a one element graph
-        #self.graph = nx.DiGraph()
-        #self.graph.add_nodes_from([self.node])
+        self.node.sufficient = True
+        self.graph = nx.DiGraph()
+        self.graph.add_nodes_from([self.node])
 
 
     def map(self, mapper, inputs=None):
@@ -1289,19 +1290,19 @@ class NewNode(object):
 
 
     def run(self, plugin="serial"):
-        self.sub = sub.SubmitterNode(plugin, node=self.node)
-        self.sub.run_node()
+        self.sub = sub.Submitter(plugin, graph=self.graph)
+        self.sub.run_graph()
         self.sub.close()
 
 
 
 
 class NewWorkflow(NewNode):
-    def __init__(self, inputs={}, *args, **kwargs):
-        super(NewWorkflow, self).__init__(*args, **kwargs)
+    def __init__(self, name, inputs={}, nodes=[], *args, **kwargs):
+        super(NewWorkflow, self).__init__(name=name, interface=None,
+                                          inputs=inputs, *args, **kwargs)
 
-        self._nodes = {}
-
+        # dj not sure what was the motivation, wf_klasses gives an empty list
         mro = self.__class__.mro()
         wf_klasses = mro[:mro.index(NewWorkflow)][::-1]
         items = {}
@@ -1312,6 +1313,9 @@ class NewWorkflow(NewNode):
                 continue
 
             self.add(name, value)
+
+
+
 
     def add(self, name, runnable):
         if is_function(runnable):
