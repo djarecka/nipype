@@ -43,7 +43,6 @@ def mapping_axis(state_inputs, mapper_rpn):
     stack = []
     current_axis = None
     current_shape = None
-
     for el in mapper_rpn:
         if el == ".":
             right = stack.pop()
@@ -176,6 +175,8 @@ class Function_Interface(object):
             raise Exception("output_nm should be a list")
         if not input_map:
             self.input_map = {}
+        else:
+            self.input_map = input_map
         # TODO use signature
         for key in inspect.getargspec(function)[0]:
             if key not in self.input_map.keys():

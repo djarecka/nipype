@@ -9,11 +9,11 @@ python35_only = pytest.mark.skipif(sys.version_info < (3, 5),
                                    reason="requires Python>3.4")
 
 
-def fun_addtwo(a):
+def fun_addtwo(a, *args, **kwargs):
     return a + 2
 
 
-def fun_addvar(a, b):
+def fun_addvar(a, b, *args, **kwargs):
     return a + b
 
 
@@ -53,6 +53,7 @@ def test_node_4():
     interf_addtwo = Function_Interface(fun_addtwo, ["out"])
     nn = NewNode(name="NA", interface=interf_addtwo, inputs={"a": [3, 5]})
     nn.map(mapper="a")
+
     assert nn.mapper == "NA-a"
     assert (nn.inputs["NA-a"] == np.array([3, 5])).all()
 
@@ -152,3 +153,53 @@ def test_node_8(plugin):
     for i, res in enumerate(expected):
         assert nn.result["out"][i][0] == res[0]
         assert nn.result["out"][i][1] == res[1]
+
+
+@pytest.mark.parametrize("plugin", Plugins)
+@python35_only
+def test_workflow_1(plugin):
+    wf = NewWorkflow(name="wf1", workingdir="wf1_".format(plugin))
+    interf_addtwo = Function_Interface(fun_addtwo, ["out"])
+    na = NewNode(name="NA", interface=interf_addtwo, base_dir="na")
+    na.map(mapper="a", inputs={"a": [3, 5]})
+    wf.add_nodes([na])
+
+    assert wf.nodes[0].mapper == "NA-a"
+    wf.run(plugin=plugin)
+
+    expected = [({"NA-a": 3}, 5), ({"NA-a": 5}, 7)]
+    key_sort = list(expected[0][0].keys())
+    expected.sort(key=lambda t: [t[0][key] for key in key_sort])
+    wf.nodes[0].result["out"].sort(key=lambda t: [t[0][key] for key in key_sort])
+    for i, res in enumerate(expected):
+        assert wf.nodes[0].result["out"][i][0] == res[0]
+        assert wf.nodes[0].result["out"][i][1] == res[1]
+
+
+@pytest.mark.parametrize("plugin", Plugins)
+@python35_only
+def test_workflow_2(plugin):
+    wf = NewWorkflow(name="wf2", workingdir="wf2_".format(plugin))
+    interf_addtwo = Function_Interface(fun_addtwo, ["out"])
+    na = NewNode(name="NA", interface=interf_addtwo, base_dir="na")
+    na.map(mapper="a", inputs={"a": [3, 5]})
+    
+    interf_addvar = Function_Interface(fun_addvar, ["out"])#, input_map={"a": "NA-a"})
+    nb = NewNode(name="NB", interface=interf_addvar, base_dir="nb")
+    nb.map(mapper=("NA-a", "b"), inputs={"b": [2, 1]})
+
+
+    wf.add_nodes([na, nb])
+    wf.connect(na, "out", nb, "a")
+    #pdb.set_trace()
+
+    assert wf.nodes[0].mapper == "NA-a"
+    wf.run(plugin=plugin)
+
+    expected = [({"NA-a": 3}, 5), ({"NA-a": 5}, 7)]
+    key_sort = list(expected[0][0].keys())
+    expected.sort(key=lambda t: [t[0][key] for key in key_sort])
+    wf.nodes[0].result["out"].sort(key=lambda t: [t[0][key] for key in key_sort])
+    for i, res in enumerate(expected):
+        assert wf.nodes[0].result["out"][i][0] == res[0]
+        assert wf.nodes[0].result["out"][i][1] == res[1]

@@ -51,12 +51,13 @@ class Submitter(object):
         # iterating over all elements
         # (i think ordered list work well here, since it's more efficient to check within a specific order)
         for nn in list(self.graph)[i_n:]:
-            for (i, ind) in enumerate(itertools.product(*nn.node_states.all_elements)):
+            for (i, ind) in enumerate(itertools.product(*nn.state.all_elements)):
                 self.node_line.append((nn, i, ind))
 
         # this parts submits nodes that are waiting to be run
         # it should stop when nothing is waiting
         while self._nodes_check():
+            print("W NODES CHECK")
             logger.debug("Submitter, in while, node_line: {}".format(self.node_line))
             time.sleep(3)
 
